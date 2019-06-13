@@ -1,0 +1,449 @@
+
+body{
+	margin: 0px;
+	font-family: 'Noto Sans KR', sans-serif;
+	overflow-x: hidden;
+}
+#top{
+	background-image: linear-gradient(to bottom, #f1689aFF, #f1689a00 100%);
+	text-align: center;
+	margin-bottom: 45px;
+}
+h1{
+	font-size: 7.1vw;
+	margin-top: 37.626px;
+	margin-left: 22px;
+	margin-right: 22px;
+	font-weight: 900;
+	text-shadow: 0px 0px 10px #f12b9a;
+	color: white;
+}
+#banner{
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	top: -20.007px;
+	margin: 0px auto;
+	height: 70%;
+	width: 100%;
+}
+h2{
+	margin-left: 10px;
+	margin-bottom: 17.81px; 
+	color: #f12b9a;
+	font-weight: 900;
+	font-size: 7.1vw;
+}
+.subh{
+	margin-left: 10px;
+	font-size: 5.7vw;
+	font-weight: 700;
+	margin-bottom: 50px;
+}
+.introduction{
+	position: relative;
+	overflow: hidden;
+	margin-bottom: 11vw;
+}
+.description{
+	position: absolute;
+	font-weight: 500;
+	font-size: 3.7vw;
+	left: 0%;
+	top: 60%;
+	margin: 5vw;
+}
+.left_slideIns{
+	animation: left_slideIn;
+}
+@keyframes left_slideIn{
+	from{
+		left: 100%;
+	}
+	to{
+		visibility: visible;
+	}
+}
+.right_slideIns{
+	animation: right_slideIn;
+}
+@keyframes right_slideIn{
+	from{
+		right: 100%;
+	}
+	to{
+		visibility: visible;
+	}
+}
+#twilightBg{
+	width: 100%;
+	clip-path: polygon(100% 0%, 100% 100%, 100% 100%, 100% 0%);
+}
+.twilightBg{
+	animation: twilightBG 0.5s;
+	animation-fill-mode: forwards;
+}
+@keyframes twilightBG{
+	from{
+		clip-path: polygon(100% 0%, 100% 100%, 100% 100%, 100% 0%);
+	}
+	to{
+		clip-path: polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%);
+	}
+}
+#twilightImg{
+	width: 55%;
+	position: absolute;
+	bottom: 50%;
+	left: 41%;
+	filter: drop-shadow(1px 0px 7px #00000080);
+	animation-duration: 0.7s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#twilight_Info{
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	width: 100%;
+	height: 100%;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#twilightSubh{
+	white-space: nowrap;
+	position: absolute;
+	bottom: 37%;
+	font-weight: 700;
+	left: 47%;
+	color: white;
+	font-size: 5.5vw;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#applejackBg{
+	width: 100%;
+	clip-path: polygon(100% 0%, 100% 100%, 100% 100%, 100% 0%);
+}
+.applejackBg{
+	animation: applejackBg 0.5s;
+	animation-fill-mode: forwards;
+}
+@keyframes applejackBg{
+	from{
+		clip-path: polygon(0% 0%, 0% 100%, 0% 100%, 0% 0%);
+	}
+	to{
+		clip-path: polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%);
+	}
+}
+#applejackImg{
+	width: 40%;
+	position: absolute;
+	bottom: 44%;
+	right: 10%;
+	filter: drop-shadow(1px 0px 7px #00000080);
+	animation-duration: 0.7s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#applejack_Info{
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	width: 100%;
+	height: 100%;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#applejackSubh{
+	white-space: nowrap;
+	position: absolute;
+	bottom: 40%;
+	font-weight: 700;
+	right: 52%;
+	color: #5c492f;
+	font-size: 5.5vw;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#rarityBg{
+	width: 100%;
+	clip-path: polygon(100% 0%, 100% 100%, 100% 100%, 100% 0%);
+}
+.rarityBg{
+	animation: rarityBg 0.5s;
+	animation-fill-mode: forwards;
+}
+@keyframes rarityBg{
+	from{
+		clip-path: polygon(0% 0%, 0% 100%, 0% 100%, 0% 0%);
+	}
+	to{
+		clip-path: polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%);
+	}
+}
+#rarityImg{
+	width: 60%;
+	position: absolute;
+	bottom: 44%;
+	right: 10%;
+	filter: drop-shadow(1px 0px 7px #00000080);
+	animation-duration: 0.7s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#rarity_Info{
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	width: 100%;
+	height: 100%;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#raritySubh{
+	white-space: nowrap;
+	position: absolute;
+	bottom: 40%;
+	font-weight: 700;
+	right: 62%;
+	color: #625a8f;
+	font-size: 5.5vw;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#fluttershyBg{
+	width: 100%;
+	clip-path: polygon(100% 0%, 100% 100%, 100% 100%, 100% 0%);
+}
+.fluttershyBg{
+	animation: fluttershyBg 0.5s;
+	animation-fill-mode: forwards;
+}
+@keyframes fluttershyBg{
+	from{
+		clip-path: polygon(50% 0%, 50% 100%, 50% 100%, 50% 0%);
+	}
+	to{
+		clip-path: polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%);
+	}
+}
+#fluttershyImg{
+	width: 75%;
+	position: absolute;
+	bottom: 44%;
+	left: 24%;
+	filter: drop-shadow(1px 0px 7px #00000080);
+	animation-duration: 0.7s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#fluttershy_Info{
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	width: 100%;
+	height: 100%;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#fluttershySubh{
+	white-space: nowrap;
+	position: absolute;
+	bottom: 40.5%;
+	font-weight: 700;
+	left: 15%;
+	color: #b8487b;
+	font-size: 5.5vw;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#rainbowBg{
+	width: 100%;
+	clip-path: polygon(100% 0%, 100% 100%, 100% 100%, 100% 0%);
+}
+.rainbowBg{
+	animation: rainbowBg 0.5s;
+	animation-fill-mode: forwards;
+}
+@keyframes rainbowBg{
+	from{
+		clip-path: polygon(0% 0%, 0% 100%, 0% 100%, 0% 0%);
+	}
+	to{
+		clip-path: polygon(0% 0%, 0% 100%, 100% 100%, 100% 0%);
+	}
+}
+#rainbowImg{
+	width: 44%;
+	position: absolute;
+	bottom: 44%;
+	right: 2%;
+	filter: drop-shadow(1px 0px 7px #00000080);
+	animation-duration: 0.7s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#rainbow_Info{
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	width: 100%;
+	height: 100%;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#rainbowSubh{
+	white-space: nowrap;
+	position: absolute;
+	bottom: 41%;
+	font-weight: 700;
+	right: 50%;
+	color: #186aa1;
+	font-size: 5.5vw;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#pinkieBg{
+	width: 100%;
+	clip-path: polygon(100% 0%, 100% 100%, 100% 100%, 100% 0%);
+}
+.pinkieBg{
+	animation: pinkieBg 1s;
+	animation-fill-mode: forwards;
+	animation-timing-function: cubic-bezier(.62,.33,1,1);
+}
+@keyframes pinkieBg{
+	from{
+		clip-path: circle(0% at 50% 50%);
+	}
+	to{
+		clip-path: circle(300% at 50% 50%);
+	}
+}
+#pinkieBg2{
+	position:absolute;
+	top: 3.4%;
+	height: 50%;
+	width: 100%;
+	background-image: url('background/pinkie%20pie%20background%20pattern.svg');
+	background-position: center;
+	visibility: hidden;
+}
+.pinkieBg2{
+	animation: pinkieBg2 1s;
+	background-size: 40%;
+	animation-fill-mode: forwards;
+	animation-timing-function: cubic-bezier(.62,.33,1,1);
+}
+@keyframes pinkieBg2{
+	from{
+		clip-path: circle(0% at 50% 50%);
+	}
+	to{
+		clip-path: circle(300% at 50% 50%);
+		visibility: visible;
+	}
+}
+#pinkieImg{
+	width: 55%;
+	position: absolute;
+	bottom: 35%;
+	right: -4%;
+	filter: drop-shadow(1px 0px 7px #00000080);
+	animation-duration: 0.7s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#pinkie_Info{
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	width: 100%;
+	height: 100%;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#pinkieSubh{
+	white-space: nowrap;
+	position: absolute;
+	bottom: 38%;
+	font-weight: 700;
+	right: 48%;
+	color: white;
+	font-size: 5.5vw;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+.fadeIns{
+	animation: fadeIn;
+}
+@keyframes fadeIn{
+	from{
+		opacity: 0;
+	}
+	to{
+		opacity: 1;
+		visibility: visible;
+	}
+}
+#laurenImg{
+	width: 100%;
+	filter: drop-shadow(1px 0px 7px #00000080);
+	animation-duration: 0.7s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#lauren_Info{
+	opacity: 1;
+	animation-duration: 0.9s;
+	animation-iteration-count: 1;
+	visibility: hidden;
+	animation-fill-mode: forwards;
+}
+#laurenSubh{
+	margin-left: 5%;
+	white-space: nowrap;
+	font-weight: 700;
+	font-size: 5.5vw;
+}
+.lauren_description{
+	font-weight: 500;
+	font-size: 3.7vw;
+	margin: 5vw;
+}
+
+
+
