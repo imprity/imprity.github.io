@@ -693,12 +693,12 @@ body{
 	}
 	#lauren{
 		width:100%;
-		height: 80%;
+		height: 70vw;
 	}
 	#laurenImg{
-		width: 40%;
+		width: 43%;
 		position: absolute;
-		left: 5%;
+		left: 3%;
 	}
 	#lauren_Info{
 		position: absolute;
