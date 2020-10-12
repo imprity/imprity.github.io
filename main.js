@@ -8,7 +8,7 @@ window.onload = function(){
       .then(device => {
           tempConsole.innerHTML = device;
       })
-      .catch(error => { tempConsole.innerHTML = error });
+      .catch(error => { tempConsole.innerHTML = error.toString() });
 }
 
 
