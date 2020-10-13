@@ -1,0 +1,24 @@
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <title>cat</title>
+  <rect width="1920" height="1080"/>
+  <g>
+    <path d="M960.1735,758.2125c0,56.3745-37.6857,66.075-84.1735,66.075s-84.1735-45.7005-84.1735-102.075" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 25px"/>
+    <path d="M1128.1735,722.2125c0,56.3745-37.6857,102.075-84.1735,102.075s-84.1735-9.7005-84.1735-66.075" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 25px"/>
+  </g>
+  <g>
+    <circle cx="576" cy="298.5" r="172" style="fill: #fff"/>
+    <circle cx="1344" cy="298.5" r="172" style="fill: #fff"/>
+  </g>
+  <g>
+    <g>
+      <line x1="161.6569" y1="724.5" x2="372.9723" y2="724.5" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 25px"/>
+      <line x1="166.5038" y1="533.1224" x2="368.1254" y2="605.8776" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 25px"/>
+      <line x1="373.3431" y1="821.1224" x2="171.7215" y2="893.8776" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 25px"/>
+    </g>
+    <g>
+      <line x1="1758.3431" y1="724.5" x2="1547.0277" y2="724.5" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 25px"/>
+      <line x1="1753.4962" y1="533.1224" x2="1551.8746" y2="605.8776" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 25px"/>
+      <line x1="1546.6569" y1="821.1224" x2="1748.2785" y2="893.8776" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 25px"/>
+    </g>
+  </g>
+</svg>

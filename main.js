@@ -3,89 +3,93 @@ var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList
 var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent
 
 let speechIndex = 0;
+let blueToothChar;
 
 let babySound = new Audio('./baby crying.mp3');
 let jermaSound = new Audio('./jerma.mp3')
 babySound.loop = true;
 jermaSound.loop = true;
-let swears =[];
+let swears = [];
 
-babySound.onload = function(){
-jermaSound.onload = function(){
 window.onload = function () {
-    LoadJson('./swears.json')
-        .then((res) => {
-            swears = res;
-            let consoleElement = document.getElementById('tempConsole');
-            let bluetoothButton = document.getElementById('bluetoothButton');
+    babySound.addEventListener("canplaythrough", babyEvent => {
+        jermaSound.addEventListener("canplaythrough", jermaEvent => {
+            LoadJson('./swears.json')
+                .then((res) => {
+                    console.log('everything loaded');
+                    swears = res;
+                    let consoleElement = document.getElementById('tempConsole');
+                    let bluetoothButton = document.getElementById('bluetoothButton');
 
-            let recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.start();
-            recognition.onresult = function (event) {
-                console.log(event.results[speechIndex][0].transcript)
-                let words = event.results[speechIndex][0].transcript.split(' ');
-                let playCrying = false;
-                words.forEach(w=>{
-                    swears.forEach(toCompare=>{
-                        if(toCompare.includes(w)){
-                            playCrying = true;
+                    let recognition = new SpeechRecognition();
+                    recognition.continuous = true;
+                    recognition.start();
+                    recognition.onresult = function (event) {
+                        console.log(event.results[speechIndex][0].transcript)
+                        let words = event.results[speechIndex][0].transcript.split(' ');
+                        let playCrying = false;
+                        words.forEach(w => {
+                            swears.forEach(toCompare => {
+                                if (toCompare.includes(w)) {
+                                    playCrying = true;
+                                }
+                            })
+                        })
+                        if (playCrying) {
+                            babySound.play();
+                            jermaSound.play();
                         }
-                    })
-                })
-                if(playCrying){
-                    babySound.play();
-                    jermaSound.play();
-                }
-                speechIndex++
-            }
-            recognition.onspeechend = () => {
-                console.log('ended stopping to restart');
-                speechIndex = 0;
-                recognition.stop();
-            };
+                        speechIndex++
+                    }
+                    recognition.onspeechend = () => {
+                        console.log('ended stopping to restart');
+                        speechIndex = 0;
+                        recognition.stop();
+                    };
 
-            recognition.onend = () => {
-                console.log('restarting');
-                recognition.start();
-            }
+                    recognition.onend = () => {
+                        console.log('restarting');
+                        recognition.start();
+                    }
 
-            bluetoothButton.onclick = function () {
-                navigator.bluetooth.requestDevice({
-                    filters: [{
-                        name: 'HMSoft'
-                    }],
-                    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
-                })
-                    .then(device => { return device.gatt.connect(); })
-                    .then(server => { return server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb'); })
-                    .then(service => { return service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb'); })
-                    .then(characteristic => { return characteristic.startNotifications() })
-                    .then(characteristic => {
-                        console.log('connected');
-                        characteristic.addEventListener('characteristicvaluechanged', event => {
-                            let decoder = new TextDecoder('utf-8');
-                            console.log(decoder.decode(event.target.value));
-                        });
-                        let textfiield = document.createElement('textarea');
-                        let sendButton = document.createElement('button');
-                        sendButton.innerText = 'Send';
-                        document.body.appendChild(textfiield);
-                        document.body.appendChild(sendButton);
-                        sendButton.onclick = function () {
-                            let toSend = textfiield.value;
-                            characteristic.writeValue(new TextEncoder('utf-8').encode(toSend));
-                        }
-                    })
-                    .catch(error => {
-                        consoleElement.innerHTML = error;
-                        console.error(error);
-                    });
-            }
-        })
+                    bluetoothButton.onclick = function () {
+                        navigator.bluetooth.requestDevice({
+                            filters: [{
+                                name: 'HMSoft'
+                            }],
+                            optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+                        })
+                            .then(device => { return device.gatt.connect(); })
+                            .then(server => { return server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb'); })
+                            .then(service => { return service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb'); })
+                            .then(characteristic => { return characteristic.startNotifications() })
+                            .then(characteristic => {
+                                console.log('connected');
+                                characteristic.addEventListener('characteristicvaluechanged', event => {
+                                    let decoder = new TextDecoder('utf-8');
+                                    console.log(decoder.decode(event.target.value));
+                                });
+                                let textfiield = document.createElement('textarea');
+                                let sendButton = document.createElement('button');
+                                sendButton.innerText = 'Send';
+                                document.body.appendChild(textfiield);
+                                document.body.appendChild(sendButton);
+                                sendButton.onclick = function () {
+                                    let toSend = textfiield.value;
+                                    characteristic.writeValue(new TextEncoder('utf-8').encode(toSend));
+                                }
+                            })
+                            .catch(error => {
+                                consoleElement.innerHTML = error;
+                                console.error(error);
+                            });
+                    }
+                }).catch(err=>console.error(err));
+
+        });
+    });
 }
-}
-}
+
 
 
 let LoadJson = function (pathTofile) {
