@@ -5,8 +5,8 @@ var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEv
 let catFace;
 let catIsSad = false;
 
-let babySound = new Audio('./baby crying.mp3');
-let jermaSound = new Audio('./jerma.mp3');
+let babySound;
+let jermaSound;
 
 let blueToothConnected = false;
 let bluetoothChar;
@@ -16,6 +16,8 @@ let speechIndex = 0;
 let swears = [];
 
 window.onload = () => {
+    babySound = document.getElementById('babySound');
+    jermaSound = document.getElementById('jermaSound');
     checkUserPermission().then(userConsent => {
         if (userConsent) {
             LoadJson('./swears.json')
