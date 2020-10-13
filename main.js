@@ -5,15 +5,13 @@ var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEv
 let speechIndex = 0;
 let blueToothChar;
 
-let babySound;
-let jermaSound;
+let babySound = new Audio('./baby crying.mp3');
+let jermaSound = new Audio('./jerma.mp3')
 babySound.loop = true;
 jermaSound.loop = true;
 let swears = [];
 
 window.onload = function () {
-    babySound = document.getElementById('babySound');
-    jermaSound = document.getElementById('jermaSound');
     babySound.addEventListener("canplaythrough", babyEvent => {
         jermaSound.addEventListener("canplaythrough", jermaEvent => {
             LoadJson('./swears.json')

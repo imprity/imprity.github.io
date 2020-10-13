@@ -16,10 +16,18 @@ let speechIndex = 0;
 let swears = [];
 
 window.onload = () => {
-    babySound = document.getElementById('babySound');
-    jermaSound = document.getElementById('jermaSound');
     checkUserPermission().then(userConsent => {
         if (userConsent) {
+            babySound = new Howl({
+                src : ['./baby crying.mp3'],
+                loop: false,
+                autoplay: false
+            })
+            jermaSound = new Howl({
+                src : ['./jerma.mp3'],
+                loop: false,
+                autoplay: false
+            })
             LoadJson('./swears.json')
             .then(jsonData => {
                 swears = jsonData;
