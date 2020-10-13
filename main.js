@@ -10,7 +10,8 @@ babySound.loop = true;
 jermaSound.loop = true;
 let swears =[];
 
-
+babySound.onload = function(){
+jermaSound.onload = function(){
 window.onload = function () {
     LoadJson('./swears.json')
         .then((res) => {
@@ -82,6 +83,8 @@ window.onload = function () {
                     });
             }
         })
+}
+}
 }
 
 
