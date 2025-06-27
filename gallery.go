@@ -1,8 +1,8 @@
 package main
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 
 	"github.com/yuin/goldmark"
 	gast "github.com/yuin/goldmark/ast"
@@ -18,7 +18,7 @@ import (
 // ==================================
 
 type GalleryImage struct {
-	AltText []byte
+	AltText     []byte
 	ImageSource []byte
 }
 
@@ -29,7 +29,7 @@ type Gallery struct {
 }
 
 func (g *Gallery) Dump(source []byte, level int) {
-	gast.DumpHelper(g, source, level, nil, nil) 
+	gast.DumpHelper(g, source, level, nil, nil)
 }
 
 // KindDefinitionList is a NodeKind of the DefinitionList node.
@@ -62,41 +62,60 @@ func (g *galleryParser) Trigger() []byte {
 }
 
 func (b *galleryParser) Open(
-	parent gast.Node, 
-	reader text.Reader, 
+	parent gast.Node,
+	reader text.Reader,
 	pc parser.Context,
 ) (gast.Node, parser.State) {
+	println("=== OPENING GALLERY ===")
 	if _, isDocument := parent.(*gast.Document); !isDocument {
 		return nil, parser.NoChildren
 	}
 
 	line, _ := reader.PeekLine()
 
-	lineStr := string(line)
-	lineStr = strings.TrimSpace(lineStr)
-	if (lineStr == "<gallery>") {
-		println("opening gallery")
+	advance := 0
 
-		reader.AdvanceToEOL()
-		return NewGallery(), parser.HasChildren
+	lineStr := string(line)
+
+	var consumed bool
+
+	lineStr, advance = ConsumeSpace(lineStr, advance)
+
+	if lineStr, advance, consumed = ConsumeLiteral(lineStr, advance, "<gallery"); !consumed {
+		return nil, parser.NoChildren
 	}
 
-	return nil, parser.NoChildren
+	lineStr, advance = ConsumeSpace(lineStr, advance)
+
+	if lineStr, advance, consumed = ConsumeLiteral(lineStr, advance, ">"); !consumed {
+		return nil, parser.NoChildren
+	}
+
+	println("=== GALLERY OEPENED ===")
+	reader.Advance(advance)
+	return NewGallery(), parser.HasChildren
 }
 
 func (b *galleryParser) Continue(
-	node gast.Node, 
-	reader text.Reader, 
+	node gast.Node,
+	reader text.Reader,
 	pc parser.Context,
 ) parser.State {
 	line, _ := reader.PeekLine()
 
-	lineStr := string(line)
-	lineStr = strings.TrimSpace(lineStr)
-	if (lineStr == "</gallery>") {
-		println("continuing gallery")
+	advance := 0
 
-		reader.AdvanceToEOL()
+	lineStr := string(line)
+
+	fmt.Printf("== \"%s\"\n", strings.ReplaceAll(lineStr, "\n", "\\n"))
+
+	lineStr, advance = ConsumeSpace(lineStr, advance)
+
+	var consumed bool
+
+	if lineStr, advance, consumed = ConsumeLiteral(lineStr, advance, "</gallery>"); consumed {
+		reader.Advance(advance)
+		println("=== CLOSING GALLERY ===")
 		return parser.Close
 	}
 
@@ -142,15 +161,15 @@ func (r *GalleryHTMLRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegiste
 // var DefinitionListAttributeFilter = html.GlobalAttributeFilter
 
 func (r *GalleryHTMLRenderer) renderGallery(
-	w util.BufWriter, 
-	source []byte, 
-	n gast.Node, 
+	w util.BufWriter,
+	source []byte,
+	n gast.Node,
 	entering bool,
 ) (gast.WalkStatus, error) {
 	if entering {
 		_, _ = w.WriteString("<gallery-open>\n")
 
-		if gallery, isGallery := n.(*Gallery); isGallery{
+		if gallery, isGallery := n.(*Gallery); isGallery {
 			for _, img := range gallery.Images {
 				w.WriteString(fmt.Sprintf("![%s](%s)\n", img.AltText, img.ImageSource))
 			}
@@ -162,10 +181,78 @@ func (r *GalleryHTMLRenderer) renderGallery(
 }
 
 // ==================================
+// transformer
+// ==================================
+
+type galleryItemASTTransformer struct {
+}
+
+var defaultGalleryItemASTTransformer = &galleryItemASTTransformer{}
+
+// NewFootnoteASTTransformer returns a new parser.ASTTransformer that
+// insert a footnote list to the last of the document.
+func NewGalleryItemASTTransformer() parser.ASTTransformer {
+	return defaultGalleryItemASTTransformer
+}
+
+func (t *galleryItemASTTransformer) Transform(
+	document *gast.Document,
+	reader text.Reader,
+	pc parser.Context,
+) {
+	println("\n=== BEFORE TRANSFORM ===\n")
+	document.Dump(reader.Source(), 0)
+
+	var galleries []*Gallery
+
+	var walkFunc func(node gast.Node, parentGallery *Gallery)
+
+	walkFunc = func(node gast.Node, parentGallery *Gallery) {
+		var nextGallery *Gallery = nil
+
+		if parentGallery != nil {
+			nextGallery = parentGallery
+
+			if img, isImage := node.(*gast.Image); isImage {
+				fmt.Printf("text: \"%s\", dest: \"%s\"\n", img.Text(reader.Source()), img.Destination)
+				parentGallery.Images = append(parentGallery.Images, GalleryImage{
+					AltText:     img.Text(reader.Source()),
+					ImageSource: img.Destination,
+				})
+			}
+		} else {
+			if gallery, isGallery := node.(*Gallery); isGallery {
+				fmt.Printf("found gallery\n")
+				galleries = append(galleries, gallery)
+				nextGallery = gallery
+			}
+		}
+
+		child := node.FirstChild()
+
+		for range node.ChildCount() {
+			walkFunc(child, nextGallery)
+			child = child.NextSibling()
+		}
+	}
+
+	walkFunc(document, nil)
+
+	fmt.Printf("found %d galleries\n", len(galleries))
+
+	for _, g := range galleries {
+		g.RemoveChildren(g)
+	}
+
+	println("\n=== AFTER TRANSFORM ===\n")
+	document.Dump(reader.Source(), 0)
+}
+
+// ==================================
 // extender
 // ==================================
 
-type galleryExtender struct {}
+type galleryExtender struct{}
 
 var GalleryExtender = &galleryExtender{}
 
