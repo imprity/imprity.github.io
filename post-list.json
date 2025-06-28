@@ -1,0 +1,25 @@
+{
+  "Posts": [
+    {
+      "Name": "cool post 1",
+      "Type": "HTML",
+      "Date": "2025-06-28T04:55:08.4218432+09:00",
+      "Dir": "post1",
+      "UUID": "6b7a78ae-b589-4e43-af48-0446f438f086"
+    },
+    {
+      "Name": "poggers post 2",
+      "Type": "HTML",
+      "Date": "2025-06-28T04:55:08.4223556+09:00",
+      "Dir": "post2",
+      "UUID": "8a91e244-77a2-4fd5-b186-1770aa5950df"
+    },
+    {
+      "Name": "post3",
+      "Type": "Markdown",
+      "Date": "2025-06-28T04:56:31.1506354+09:00",
+      "Dir": "post3",
+      "UUID": "f1070d81-b68b-4f63-9d51-44aa92df72f0"
+    }
+  ]
+}

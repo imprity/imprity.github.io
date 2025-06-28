@@ -1,9 +1,13 @@
-# hello world
+<em> this is so \</em>fucking dumb</em>
 
-- hello 
+<gallery>  
 
-![image title 1](image/source/1)
-<gallery>
-![image title 2](image/source/2)
-![image title 3](image/source/3) 
-</gallery>
+![sup](bro)
+![69](420) 
+
+</gallery> 
+
+meme 
+I have no idea what the fuck is happening... <iframe>meme</iframe>
+
+ # ehem

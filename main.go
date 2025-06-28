@@ -1,32 +1,34 @@
 package main
 
 import (
-	"bytes"
-	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/renderer/html"
+	"log"
 	"os"
 )
 
+var (
+	ErrLogger  = log.New(os.Stderr, "[ FAIL! ] : ", log.Lshortfile)
+	WarnLogger = log.New(os.Stderr, "[ WARN! ] : ", log.Lshortfile)
+	Logger     = log.New(os.Stdout, "", 0)
+)
+
 func main() {
-	fileBytes, err := os.ReadFile("test.md")
+	postList, err := LoadPostList("post-list.json")
 	if err != nil {
-		panic(err)
-	}
-	markdown := goldmark.New(
-		goldmark.WithExtensions(
-			GalleryExtender,
-		),
-		goldmark.WithRendererOptions(
-			html.WithUnsafe(),
-		),
-	)
-
-	var byteBuf bytes.Buffer
-
-	err = markdown.Convert(fileBytes, &byteBuf)
-	if err != nil {
-		panic(err)
+		ErrLogger.Fatal(err)
 	}
 
-	os.WriteFile("out.text", byteBuf.Bytes(), 0664)
+	for _, post := range postList.Posts {
+		println("------------------")
+		post.Dump()
+	}
+
+	err = CompileBlog("posts", postList, "public")
+	if err != nil {
+		ErrLogger.Fatal(err)
+	}
+
+	err = StartServer()
+	if err != nil {
+		ErrLogger.Fatal(err)
+	}
 }
