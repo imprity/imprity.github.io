@@ -84,11 +84,12 @@ func (p Post) Clone() Post {
 }
 
 func (p *Post) Dump() {
-	fmt.Printf("name : %v\n", p.Name)
+	fmt.Printf("UUID : %v\n", p.UUID)
+
+	fmt.Printf("Name : %v\n", p.Name)
 	fmt.Printf("Type : %v\n", p.Type)
 	fmt.Printf("Date : %v\n", p.Date)
 	fmt.Printf("Dir  : %v\n", p.Dir)
-	fmt.Printf("UUID : %v\n", p.UUID)
 }
 
 type PostList struct {

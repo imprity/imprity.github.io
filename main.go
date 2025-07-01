@@ -12,22 +12,9 @@ var (
 )
 
 func main() {
-	postList, err := LoadPostList("post-list.json")
-	if err != nil {
-		ErrLogger.Fatal(err)
-	}
+	Logger.Printf("serving http://localhost:6969")
 
-	for _, post := range postList.Posts {
-		println("------------------")
-		post.Dump()
-	}
-
-	err = CompileBlog("posts", postList, "public")
-	if err != nil {
-		ErrLogger.Fatal(err)
-	}
-
-	err = StartServer()
+	err := StartServer()
 	if err != nil {
 		ErrLogger.Fatal(err)
 	}

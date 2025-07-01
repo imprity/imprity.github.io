@@ -10,6 +10,19 @@ import (
 	"time"
 )
 
+func StartServer() error {
+	fileServer := http.FileServer(http.Dir("./"))
+	http.Handle("/", LogReqest(NoCache(fileServer)))
+	http.Handle("/api/", LogReqest(&AdminAPIHandler{}))
+
+	err := http.ListenAndServe(":6969", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // copy pasted from https://stackoverflow.com/questions/33880343/go-webserver-dont-cache-files-using-timestamp
 
 var noCacheHeaders = map[string]string{
@@ -28,21 +41,45 @@ var etagHeaders = []string{
 	"If-Unmodified-Since",
 }
 
-func StartServer() error {
-	fileServer := http.FileServer(http.Dir("./"))
-	http.Handle("/", fileServer)
-	http.Handle("/api/", &AdminAPIHandler{})
+func LogReqest(h http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		Logger.Printf("request : %v - %v", r.URL.String(), r.Method)
 
-	err := http.ListenAndServe(":6969", nil)
-	if err != nil {
-		return err
+		h.ServeHTTP(w, r)
 	}
 
-	return nil
+	return http.HandlerFunc(fn)
 }
 
-type AdminAPIHandler struct {
+// func ProperMimeType(dir http.Dir) http.Handler {
+// 	fn := func(w http.ResponseWriter, r *http.Request) {
+// 		http.ServeContent(w, r, )
+// 	}
+//
+// 	return http.HandlerFunc(fn)
+// }
+
+func NoCache(h http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		// Delete any ETag headers that may have been set
+		for _, v := range etagHeaders {
+			if r.Header.Get(v) != "" {
+				r.Header.Del(v)
+			}
+		}
+
+		// Set our NoCache headers
+		for k, v := range noCacheHeaders {
+			w.Header().Set(k, v)
+		}
+
+		h.ServeHTTP(w, r)
+	}
+
+	return http.HandlerFunc(fn)
 }
+
+type AdminAPIHandler struct{}
 
 const (
 	PostListPath = "post-list.json"
@@ -54,8 +91,6 @@ func (aa *AdminAPIHandler) ServeHTTP(
 	res http.ResponseWriter,
 	req *http.Request,
 ) {
-	fmt.Printf("request url : %v\n", req.URL)
-
 	for k, v := range noCacheHeaders {
 		res.Header().Set(k, v)
 	}
