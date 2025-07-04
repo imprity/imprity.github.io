@@ -194,8 +194,7 @@ func LoadPostList(postListPath string) (PostList, error) {
 }
 
 func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, error) {
-	oldPostsCopy := oldPosts.Clone()
-
+	var updatedPosts []Post
 	var newPosts []Post
 
 	var postDirs []os.DirEntry
@@ -240,41 +239,55 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 
 		// check if there already is a post with same uuid
 		alreadyExists := false
+		var alreadyExistingOldPost Post
 
-		for i, otherPost := range oldPostsCopy.Posts {
+		for _, otherPost := range oldPosts.Posts {
 			if otherPost.UUID == postUUID {
 				alreadyExists = true
-
-				// update and old post
-				oldPostsCopy.Posts[i].Dir = postDir.Name()
-
+				alreadyExistingOldPost = otherPost
 				break
 			}
 		}
 
-		// if there is no post with same UUID, it's a new post
-		if !alreadyExists {
-			var newPost Post
+		var post Post
 
-			newPost.UUID = postUUID
+		post.UUID = postUUID
 
-			newPost.Name = postDir.Name()
-			newPost.Type = postType
-			newPost.Date = now
-			newPost.Dir = postDir.Name()
+		if alreadyExists {
+			post.Name = alreadyExistingOldPost.Name
+			post.Date = alreadyExistingOldPost.Date
+		} else {
+			post.Name = postDir.Name()
+			post.Date = now
+		}
 
-			newPosts = append(newPosts, newPost)
+		post.Type = postType
+		post.Dir = postDir.Name()
+
+		if alreadyExists {
+			updatedPosts = append(updatedPosts, post)
+		} else {
+			newPosts = append(newPosts, post)
 		}
 	}
+
+	// sort updated posts
+	originalIndicies := make(map[uuid.UUID]int)
+	for i, post := range oldPosts.Posts {
+		originalIndicies[post.UUID] = i
+	}
+	slices.SortFunc(updatedPosts, func(a, b Post) int {
+		return originalIndicies[a.UUID] - originalIndicies[b.UUID]
+	})
 
 	// sort newPosts
 	slices.SortFunc(newPosts, func(a, b Post) int {
 		return strings.Compare(a.Name, b.Name)
 	})
 
-	oldPostsCopy.Posts = append(oldPostsCopy.Posts, newPosts...)
+	updatedPosts = append(updatedPosts, newPosts...)
 
-	return oldPostsCopy, nil
+	return PostList{Posts: updatedPosts}, nil
 }
 
 func CompileBlog(postRoot string, postList PostList, outDir string) error {
@@ -319,7 +332,7 @@ func CompileBlog(postRoot string, postList PostList, outDir string) error {
 			postOutDir := filepath.Join(tmpOutDir, post.Dir)
 
 			// ===========================================
-			// if post type is html just copy directory
+			// if post type is html, just copy directory
 			// ===========================================
 			if post.Type == PostTypeHTML {
 				postFS := os.DirFS(postDirPath)
@@ -329,6 +342,9 @@ func CompileBlog(postRoot string, postList PostList, outDir string) error {
 				}
 			}
 
+			// =======================================================
+			// if post type is markdown, convert it to html
+			// =======================================================
 			if post.Type == PostTypeMarkDown {
 				err := os.Mkdir(postOutDir, 0755)
 				if err != nil {
