@@ -43,6 +43,26 @@ func FileExists(name string, isDir bool) (bool, error) {
 	}
 }
 
+// delete a file
+// unlike os.Remove,
+// it's not an error if file didn't exist in a first place
+func DeleteFile(name string) error {
+	name = filepath.Clean(name)
+
+	exists, err := FileExists(name, false)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	err = os.Remove(name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func CopyFile(src, dst string) error {
 	src = filepath.Clean(src)
 	dst = filepath.Clean(dst)

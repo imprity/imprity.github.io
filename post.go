@@ -106,6 +106,21 @@ func (pl *PostList) Clone() PostList {
 	return clone
 }
 
+func SavePostList(postList PostList, name string) error {
+	name = filepath.Clean(name)
+
+	jsonBytes, err := json.MarshalIndent(postList, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(name, jsonBytes, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 const PostUUIDFileName = "post-uuid.txt"
 
 func GetPostTypeFromDir(postDir string) (PostType, error) {
@@ -198,6 +213,16 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 	var newPosts []Post
 
 	var postDirs []os.DirEntry
+
+	{
+		exists, err := FileExists(postRoot, true)
+		if err != nil {
+			return PostList{}, err
+		}
+		if !exists {
+			return PostList{}, nil
+		}
+	}
 
 	postDirs, err := os.ReadDir(postRoot)
 	if err != nil {

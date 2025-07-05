@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 	"time"
 )
@@ -81,7 +80,7 @@ func NoCache(h http.Handler) http.Handler {
 
 type AdminAPIHandler struct{}
 
-const (
+var (
 	PostListPath = "post-list.json"
 	PostsPath    = "posts"
 	PostsOutPath = "public"
@@ -193,12 +192,7 @@ func (aa *AdminAPIHandler) ServeHTTP(
 				return getErrResponse(err), 500
 			}
 
-			jsonBytes, err := json.MarshalIndent(updatedPostList, "", "  ")
-			if err != nil {
-				return getErrResponse(err), 500
-			}
-
-			err = os.WriteFile(PostListPath, jsonBytes, 0644)
+			err = SavePostList(updatedPostList, PostListPath)
 			if err != nil {
 				return getErrResponse(err), 500
 			}

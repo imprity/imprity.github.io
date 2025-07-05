@@ -5,3 +5,7 @@
 /tmp
 
 /node_modules
+
+/test/posts-copy
+/test/post-list.json
+/test/public
