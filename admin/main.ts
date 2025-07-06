@@ -1,3 +1,15 @@
+function report(text: string, isError: boolean) {
+    const reportText = document.getElementById('report-text')
+    if (reportText !== null) {
+        reportText.innerText = text
+        if (isError) {
+            reportText.style.color = 'var(--red)'
+        } else {
+            reportText.style.color = 'black'
+        }
+    }
+}
+
 interface PostListEntry {
     id: number
 
@@ -78,7 +90,7 @@ class PostList {
         let dateInput: HTMLInputElement
         let dateStatus: HTMLElement
         let deleteStatus: HTMLParagraphElement
-        let dragHandle: HTMLElement
+        let handle: HTMLElement
         let listOverlay: HTMLElement
 
         containerDiv = f.create('div').classes('list-container-div').add(
@@ -91,11 +103,13 @@ class PostList {
                 ),
                 (deleteStatus = f.create('p').text('DELETED').html as HTMLParagraphElement)
             ).html),
-            (dragHandle = f.create('div').set('draggable', 'true').classes('list-handle', 'noselect').text(':::').html),
+            (handle = f.create('div').set('tabindex', '0').classes('list-handle', 'noselect').text(':::::').html),
             (listOverlay = f.create('div').classes('list-overlay').html)
         ).set('post-uuid', post.uuid).html
 
         this.listDiv.appendChild(containerDiv)
+
+            ; (listOverlay);
 
         const entry = {
             id: getNewPostListEntryId(),
@@ -104,8 +118,56 @@ class PostList {
             markedForDeletion: markedForDeletion
         }
 
-        // this.listEntries.push(entry)
         this.listEntries.set(entry.post.uuid, entry)
+
+        {
+            handle.addEventListener('focus', (e) => {
+                if (e.target === handle) {
+                    containerDiv.classList.add('list-container-div-hl')
+                }
+            })
+            handle.addEventListener('click', (e) => {
+                if (e.target === handle) {
+                    handle.focus()
+                    containerDiv.classList.add('list-container-div-hl')
+                }
+            })
+
+            handle.addEventListener('focusout', (e) => {
+                containerDiv.classList.remove('list-container-div-hl')
+            })
+
+            handle.addEventListener('keydown', (e) => {
+                if (e.target === handle) {
+
+                    const nextSibling = containerDiv.nextSibling as HTMLElement
+                    const prevSibling = containerDiv.previousSibling as HTMLElement
+
+                    if (e.ctrlKey && e.code === 'ArrowDown') {
+                        nextSibling?.after(containerDiv)
+                        handle.focus()
+                        e.preventDefault()
+                    }
+                    if (e.ctrlKey && e.code === 'ArrowUp') {
+                        prevSibling?.before(containerDiv)
+                        handle.focus()
+                        e.preventDefault()
+                    }
+
+                    if (!e.ctrlKey && e.code === 'ArrowDown') {
+                        const nextHandle = nextSibling?.querySelector('.list-handle') as HTMLElement
+                        nextHandle?.focus()
+                        e.preventDefault()
+                    }
+
+                    if (!e.ctrlKey && e.code === 'ArrowUp') {
+                        const prevHandle = prevSibling?.querySelector('.list-handle') as HTMLElement
+                        prevHandle?.focus()
+                        e.preventDefault()
+                    }
+                }
+            })
+        }
 
         // add name input
         {
@@ -229,103 +291,10 @@ class PostList {
 
         // add delete status
         {
-            deleteStatus.style.color = 'red'
+            deleteStatus.style.color = 'var(--red)'
             if (!entry.markedForDeletion) {
                 deleteStatus.style.display = "none"
             }
-        }
-
-        // add drag logic
-        {
-            const clearDragHoverStyle = () => {
-                listOverlay.classList.remove(
-                    'list-overlay-hl-top',
-                    'list-overlay-hl-bottom',
-                )
-            }
-
-            dragHandle.addEventListener('dragstart', (e) => {
-                containerDiv.classList.add('list-cotainer-div-dragged')
-                this.draggingEntry = entry
-                if (e.dataTransfer !== null) {
-                    const handleRect = dragHandle.getBoundingClientRect()
-                    const containerRect = containerDiv.getBoundingClientRect()
-                    const offsetX = e.clientX - handleRect.x
-                    const offsetY = e.clientY - handleRect.y
-                    e.dataTransfer.setDragImage(containerDiv,
-                        handleRect.x - containerRect.x + offsetX,
-                        handleRect.y - containerRect.y + offsetY,
-                    )
-                }
-            })
-
-            containerDiv.addEventListener('dragover', (e) => {
-                e.preventDefault()
-
-                if (
-                    this.draggingEntry !== null &&
-                    entry.id === this.draggingEntry.id
-                ) {
-                    return
-                }
-
-                const rect = entry.containerDiv.getBoundingClientRect()
-
-                let appendBefore = true
-                if (e.clientY > rect.y + rect.height * 0.5) {
-                    appendBefore = false
-                }
-
-                clearDragHoverStyle()
-
-                if (appendBefore) {
-                    listOverlay.classList.add('list-overlay-hl-top')
-                } else {
-                    listOverlay.classList.add('list-overlay-hl-bottom')
-                }
-            })
-
-            containerDiv.addEventListener('dragleave', (e) => {
-                e.preventDefault()
-                if (
-                    e.relatedTarget instanceof Element &&
-                    containerDiv.contains(e.relatedTarget)
-                ) {
-                    return
-                }
-                clearDragHoverStyle()
-            })
-
-            containerDiv.addEventListener('drop', (e) => {
-                e.preventDefault()
-
-                clearDragHoverStyle()
-
-                if (this.draggingEntry === null) {
-                    return
-                }
-                if (this.draggingEntry.id === entry.id) {
-                    return
-                }
-
-                const rect = containerDiv.getBoundingClientRect()
-
-                let appendBefore = true
-                if (e.clientY > rect.y + rect.height * 0.5) {
-                    appendBefore = false
-                }
-
-                if (appendBefore) {
-                    containerDiv.before(this.draggingEntry.containerDiv)
-                } else {
-                    containerDiv.after(this.draggingEntry.containerDiv)
-                }
-            })
-
-            dragHandle.addEventListener('dragend', (e) => {
-                containerDiv.classList.remove('list-cotainer-div-dragged')
-                this.draggingEntry = null
-            })
         }
     }
 
@@ -355,31 +324,39 @@ class PostList {
         const postList = new PostListContainer()
         postList.Posts = containers
 
-        const res = await fetch('/api/update-posts', {
-            method: 'PUT',
-            headers: {
-                'Content-type': 'application/json'
-            },
-            body: JSON.stringify(postList)
-        });
+        const makeRequest = async (): Promise<any> => {
+            const res = await fetch('/api/update-posts', {
+                method: 'PUT',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(postList)
+            });
 
-        if (res.status !== 200) {
-            // TODO : report error better
-            console.error('request failed')
-
-            if (res.headers.get('Content-Type') === 'application/json') {
-                const json = await res.json()
-                console.error(json)
+            if (res.status !== 200) {
+                if (res.headers.get('Content-Type') === 'application/json') {
+                    const json = await res.json()
+                    throw new Error(`request failed ${json}`)
+                }
             }
 
+            const json = await res.json()
+            if (json.Result !== 'success') {
+                throw new Error(`request failed ${json}`)
+            }
+
+            return json
+        }
+
+        let json
+        try {
+            json = await makeRequest()
+        } catch (err) {
+            console.error(err)
+            report('submit failed, check console for details', true)
             return
         }
 
-        let json = await res.json()
-
-        // for (let i = 0; i < this.listDiv.children.length; i++) {
-        //     this.listDiv.children[i].remove()
-        // }
         while (this.listDiv.children.length > 0) {
             this.listDiv.children[0].remove()
         }
@@ -400,56 +377,62 @@ class PostList {
                 this.addEntry(post, false)
             }
         }
+
+        report('SUCCESS', false)
     }
 }
 
 (async () => {
     const postList = new PostList()
 
-    const res = await fetch('/api/get-posts')
-    if (res.status !== 200) {
-        // TODO : report error better
-        console.error('request failed')
+    const makeRequest = async (): Promise<any> => {
+        const res = await fetch('/api/get-posts')
 
-        if (res.headers.get('Content-Type') === 'application/json') {
-            const json = await res.json()
-            console.error(json)
-        }
-    }
-
-    const json = await res.json()
-
-    console.log(json)
-
-    if (json.Result === 'success') {
-        var oldPosts: Map<string, Post> = new Map()
-        var newPosts: Map<string, Post> = new Map()
-
-        {
-            const dummyContainer = new PostContainer()
-
-            for (const p of json.Old.Posts) {
-                if (objHasMatchingKeys(p, dummyContainer, false)) {
-                    const post = new Post()
-                    post.setFromPostContainer(p)
-                    oldPosts.set(post.uuid, post)
-                }
-            }
-
-            for (const p of json.New.Posts) {
-                if (objHasMatchingKeys(p, dummyContainer, false)) {
-                    const post = new Post()
-                    post.setFromPostContainer(p)
-                    newPosts.set(post.uuid, post)
-                }
+        if (res.status !== 200) {
+            if (res.headers.get('Content-Type') === 'application/json') {
+                const json = await res.json()
+                throw new Error(`request failed ${json}`)
             }
         }
 
-        postList.setPostList(oldPosts, newPosts)
-    } else {
-        console.error(json)
+        const json = await res.json()
+        if (json.Result !== 'success') {
+            throw new Error(`request failed ${json}`)
+        }
+
+        return json
     }
 
-    console.log(json)
+    let json
+    try {
+        json = await makeRequest()
+    } catch (err) {
+        console.error(err)
+        report('GET request failed, check console for details', true)
+        return
+    }
+
+    var oldPosts: Map<string, Post> = new Map()
+    var newPosts: Map<string, Post> = new Map()
+
+    const dummyContainer = new PostContainer()
+
+    for (const p of json.Old.Posts) {
+        if (objHasMatchingKeys(p, dummyContainer, false)) {
+            const post = new Post()
+            post.setFromPostContainer(p)
+            oldPosts.set(post.uuid, post)
+        }
+    }
+
+    for (const p of json.New.Posts) {
+        if (objHasMatchingKeys(p, dummyContainer, false)) {
+            const post = new Post()
+            post.setFromPostContainer(p)
+            newPosts.set(post.uuid, post)
+        }
+    }
+
+    postList.setPostList(oldPosts, newPosts)
 })()
 

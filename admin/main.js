@@ -357,6 +357,18 @@ function blurItAndChildren(element) {
     };
     toRecurse(element);
 }
+function report(text, isError) {
+    const reportText = document.getElementById('report-text');
+    if (reportText !== null) {
+        reportText.innerText = text;
+        if (isError) {
+            reportText.style.color = 'var(--red)';
+        }
+        else {
+            reportText.style.color = 'black';
+        }
+    }
+}
 let PostListEntryIdMax = -1;
 function getNewPostListEntryId() {
     PostListEntryIdMax += 1;
@@ -409,10 +421,11 @@ class PostList {
         let dateInput;
         let dateStatus;
         let deleteStatus;
-        let dragHandle;
+        let handle;
         let listOverlay;
-        containerDiv = f.create('div').classes('list-container-div').add((f.create('div').classes('list-content-div').add(f.create('label').text('name'), (nameInput = f.create('div').classes('list-name-input').set('contenteditable', 'plaintext-only').html), f.create('label').text('YYYY/MM/DD ').add((dateInput = f.create('input').classes('date-input').set('type', 'text').set('size', '15').html), (dateStatus = f.create('span').text('\u2705').html)), (deleteStatus = f.create('p').text('DELETED').html)).html), (dragHandle = f.create('div').set('draggable', 'true').classes('list-handle', 'noselect').text(':::').html), (listOverlay = f.create('div').classes('list-overlay').html)).set('post-uuid', post.uuid).html;
+        containerDiv = f.create('div').classes('list-container-div').add((f.create('div').classes('list-content-div').add(f.create('label').text('name'), (nameInput = f.create('div').classes('list-name-input').set('contenteditable', 'plaintext-only').html), f.create('label').text('YYYY/MM/DD ').add((dateInput = f.create('input').classes('date-input').set('type', 'text').set('size', '15').html), (dateStatus = f.create('span').text('\u2705').html)), (deleteStatus = f.create('p').text('DELETED').html)).html), (handle = f.create('div').set('tabindex', '0').classes('list-handle', 'noselect').text(':::::').html), (listOverlay = f.create('div').classes('list-overlay').html)).set('post-uuid', post.uuid).html;
         this.listDiv.appendChild(containerDiv);
+        (listOverlay);
         const entry = {
             id: getNewPostListEntryId(),
             post: post,
@@ -421,6 +434,48 @@ class PostList {
         };
         // this.listEntries.push(entry)
         this.listEntries.set(entry.post.uuid, entry);
+        {
+            handle.addEventListener('focus', (e) => {
+                if (e.target === handle) {
+                    containerDiv.classList.add('list-container-div-hl');
+                }
+            });
+            handle.addEventListener('click', (e) => {
+                if (e.target === handle) {
+                    handle.focus();
+                    containerDiv.classList.add('list-container-div-hl');
+                }
+            });
+            handle.addEventListener('focusout', (e) => {
+                containerDiv.classList.remove('list-container-div-hl');
+            });
+            handle.addEventListener('keydown', (e) => {
+                if (e.target === handle) {
+                    const nextSibling = containerDiv.nextSibling;
+                    const prevSibling = containerDiv.previousSibling;
+                    if (e.ctrlKey && e.code === 'ArrowDown') {
+                        nextSibling === null || nextSibling === void 0 ? void 0 : nextSibling.after(containerDiv);
+                        handle.focus();
+                        e.preventDefault();
+                    }
+                    if (e.ctrlKey && e.code === 'ArrowUp') {
+                        prevSibling === null || prevSibling === void 0 ? void 0 : prevSibling.before(containerDiv);
+                        handle.focus();
+                        e.preventDefault();
+                    }
+                    if (!e.ctrlKey && e.code === 'ArrowDown') {
+                        const nextHandle = nextSibling === null || nextSibling === void 0 ? void 0 : nextSibling.querySelector('.list-handle');
+                        nextHandle === null || nextHandle === void 0 ? void 0 : nextHandle.focus();
+                        e.preventDefault();
+                    }
+                    if (!e.ctrlKey && e.code === 'ArrowUp') {
+                        const prevHandle = prevSibling === null || prevSibling === void 0 ? void 0 : prevSibling.querySelector('.list-handle');
+                        prevHandle === null || prevHandle === void 0 ? void 0 : prevHandle.focus();
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
         // add name input
         {
             nameInput.innerText = post.name;
@@ -520,79 +575,10 @@ class PostList {
         }
         // add delete status
         {
-            deleteStatus.style.color = 'red';
+            deleteStatus.style.color = 'var(--red)';
             if (!entry.markedForDeletion) {
                 deleteStatus.style.display = "none";
             }
-        }
-        // add drag logic
-        {
-            const clearDragHoverStyle = () => {
-                listOverlay.classList.remove('list-overlay-hl-top', 'list-overlay-hl-bottom');
-            };
-            dragHandle.addEventListener('dragstart', (e) => {
-                containerDiv.classList.add('list-cotainer-div-dragged');
-                this.draggingEntry = entry;
-                if (e.dataTransfer !== null) {
-                    const handleRect = dragHandle.getBoundingClientRect();
-                    const containerRect = containerDiv.getBoundingClientRect();
-                    const offsetX = e.clientX - handleRect.x;
-                    const offsetY = e.clientY - handleRect.y;
-                    e.dataTransfer.setDragImage(containerDiv, handleRect.x - containerRect.x + offsetX, handleRect.y - containerRect.y + offsetY);
-                }
-            });
-            containerDiv.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                if (this.draggingEntry !== null &&
-                    entry.id === this.draggingEntry.id) {
-                    return;
-                }
-                const rect = entry.containerDiv.getBoundingClientRect();
-                let appendBefore = true;
-                if (e.clientY > rect.y + rect.height * 0.5) {
-                    appendBefore = false;
-                }
-                clearDragHoverStyle();
-                if (appendBefore) {
-                    listOverlay.classList.add('list-overlay-hl-top');
-                }
-                else {
-                    listOverlay.classList.add('list-overlay-hl-bottom');
-                }
-            });
-            containerDiv.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                if (e.relatedTarget instanceof Element &&
-                    containerDiv.contains(e.relatedTarget)) {
-                    return;
-                }
-                clearDragHoverStyle();
-            });
-            containerDiv.addEventListener('drop', (e) => {
-                e.preventDefault();
-                clearDragHoverStyle();
-                if (this.draggingEntry === null) {
-                    return;
-                }
-                if (this.draggingEntry.id === entry.id) {
-                    return;
-                }
-                const rect = containerDiv.getBoundingClientRect();
-                let appendBefore = true;
-                if (e.clientY > rect.y + rect.height * 0.5) {
-                    appendBefore = false;
-                }
-                if (appendBefore) {
-                    containerDiv.before(this.draggingEntry.containerDiv);
-                }
-                else {
-                    containerDiv.after(this.draggingEntry.containerDiv);
-                }
-            });
-            dragHandle.addEventListener('dragend', (e) => {
-                containerDiv.classList.remove('list-cotainer-div-dragged');
-                this.draggingEntry = null;
-            });
         }
     }
     submit() {
@@ -615,26 +601,35 @@ class PostList {
             }
             const postList = new PostListContainer();
             postList.Posts = containers;
-            const res = yield fetch('/api/update-posts', {
-                method: 'PUT',
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify(postList)
-            });
-            if (res.status !== 200) {
-                // TODO : report error better
-                console.error('request failed');
-                if (res.headers.get('Content-Type') === 'application/json') {
-                    const json = yield res.json();
-                    console.error(json);
+            const makeRequest = () => __awaiter(this, void 0, void 0, function* () {
+                const res = yield fetch('/api/update-posts', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-type': 'application/json'
+                    },
+                    body: JSON.stringify(postList)
+                });
+                if (res.status !== 200) {
+                    if (res.headers.get('Content-Type') === 'application/json') {
+                        const json = yield res.json();
+                        throw new Error(`request failed ${json}`);
+                    }
                 }
+                const json = yield res.json();
+                if (json.Result !== 'success') {
+                    throw new Error(`request failed ${json}`);
+                }
+                return json;
+            });
+            let json;
+            try {
+                json = yield makeRequest();
+            }
+            catch (err) {
+                console.error(err);
+                report('submit failed, check console for details', true);
                 return;
             }
-            let json = yield res.json();
-            // for (let i = 0; i < this.listDiv.children.length; i++) {
-            //     this.listDiv.children[i].remove()
-            // }
             while (this.listDiv.children.length > 0) {
                 this.listDiv.children[0].remove();
             }
@@ -650,46 +645,51 @@ class PostList {
                     this.addEntry(post, false);
                 }
             }
+            report('SUCCESS', false);
         });
     }
 }
 (() => __awaiter(void 0, void 0, void 0, function* () {
     const postList = new PostList();
-    const res = yield fetch('/api/get-posts');
-    if (res.status !== 200) {
-        // TODO : report error better
-        console.error('request failed');
-        if (res.headers.get('Content-Type') === 'application/json') {
-            const json = yield res.json();
-            console.error(json);
-        }
-    }
-    const json = yield res.json();
-    console.log(json);
-    if (json.Result === 'success') {
-        var oldPosts = new Map();
-        var newPosts = new Map();
-        {
-            const dummyContainer = new PostContainer();
-            for (const p of json.Old.Posts) {
-                if (objHasMatchingKeys(p, dummyContainer, false)) {
-                    const post = new Post();
-                    post.setFromPostContainer(p);
-                    oldPosts.set(post.uuid, post);
-                }
-            }
-            for (const p of json.New.Posts) {
-                if (objHasMatchingKeys(p, dummyContainer, false)) {
-                    const post = new Post();
-                    post.setFromPostContainer(p);
-                    newPosts.set(post.uuid, post);
-                }
+    const makeRequest = () => __awaiter(void 0, void 0, void 0, function* () {
+        const res = yield fetch('/api/get-posts');
+        if (res.status !== 200) {
+            if (res.headers.get('Content-Type') === 'application/json') {
+                const json = yield res.json();
+                throw new Error(`request failed ${json}`);
             }
         }
-        postList.setPostList(oldPosts, newPosts);
+        const json = yield res.json();
+        if (json.Result !== 'success') {
+            throw new Error(`request failed ${json}`);
+        }
+        return json;
+    });
+    let json;
+    try {
+        json = yield makeRequest();
     }
-    else {
-        console.error(json);
+    catch (err) {
+        console.error(err);
+        report('GET request failed, check console for details', true);
+        return;
     }
-    console.log(json);
+    var oldPosts = new Map();
+    var newPosts = new Map();
+    const dummyContainer = new PostContainer();
+    for (const p of json.Old.Posts) {
+        if (objHasMatchingKeys(p, dummyContainer, false)) {
+            const post = new Post();
+            post.setFromPostContainer(p);
+            oldPosts.set(post.uuid, post);
+        }
+    }
+    for (const p of json.New.Posts) {
+        if (objHasMatchingKeys(p, dummyContainer, false)) {
+            const post = new Post();
+            post.setFromPostContainer(p);
+            newPosts.set(post.uuid, post);
+        }
+    }
+    postList.setPostList(oldPosts, newPosts);
 }))();
