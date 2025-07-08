@@ -1,3 +1,7 @@
+class PostListContainer {
+    Posts: Array<PostContainer> = []
+}
+
 class PostContainer {
     UUID: string = ""
 
@@ -15,13 +19,13 @@ class Post {
     date: string = ""
     dir: string = ""
 
-    setFromPostContainer(container: PostContainer) {
-        this.uuid = container.UUID
+    setFromPostJsonOrThrow(json: any) {
+        this.uuid = json.UUID
 
-        this.name = container.Name
-        this.type = container.Type
-        this.date = container.Date
-        this.dir = container.Dir
+        this.name = json.Name
+        this.type = json.Type
+        this.date = json.Date
+        this.dir = json.Dir
     }
 
     toPostContainer(): PostContainer {
@@ -71,6 +75,18 @@ class Post {
     }
 }
 
-class PostListContainer {
-    Posts: Array<PostContainer> = []
+function parsePostListJsonOrThrow(json: any): Map<string, Post> {
+    let posts: Map<string, Post> = new Map()
+
+    if (json.Posts === null) {
+        return posts
+    }
+
+    for (const p of json.Posts) {
+        const post = new Post()
+        post.setFromPostJsonOrThrow(p)
+        posts.set(post.uuid, post)
+    }
+
+    return posts
 }

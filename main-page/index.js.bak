@@ -1,0 +1,141 @@
+function joinPath(path1, path2) {
+    if (!path1.endsWith('/')) {
+        path1 = path1 + '/'
+    }
+    let pathDelimiterAt = path2.indexOf('/');
+    if (pathDelimiterAt >= 0) {
+        return path1 + path2.substring(pathDelimiterAt + 1);
+    }
+    return path1 + path2;
+}
+
+let COLUMN_CONTAINER = document.getElementById('column-container');
+
+let COLUMNS = [];
+let POST_ELEMENTS = [];
+
+let COLUMN_COUNT = 1;
+
+function onResize(){
+    let postColumnCount = getComputedStyle(document.documentElement).getPropertyValue('--post-column-count');
+    postColumnCount = parseInt(postColumnCount);
+    if(isNaN(postColumnCount)){
+        console.error(
+            'Failed to parse css --post-column-count value to number\n'+
+            'Setting it to 1'
+            );
+        postColumnCount = 1;
+    }
+    changeColumnCount(postColumnCount);
+}
+
+let firstTimeCalled = true;
+let changeColumnCount = function (count) {
+    if (COLUMN_COUNT === count && !firstTimeCalled) {
+        return;
+    }
+    firstTimeCalled = true;
+    COLUMN_COUNT = count;
+    for (const column of COLUMNS) {
+        column.remove();
+    }
+    COLUMNS.length = 0;
+
+    for (let i = 0; i < COLUMN_COUNT; i++) {
+        let column = document.createElement('div');
+        column.className = 'post_column';
+
+        COLUMN_CONTAINER.appendChild(column);
+        COLUMNS.push(column);
+    }
+
+    let columnIndex = 0;
+
+    for (const post of POST_ELEMENTS) {
+        COLUMNS[columnIndex].appendChild(post);
+        columnIndex += 1;
+        columnIndex = columnIndex % COLUMN_COUNT;
+    }
+}
+
+window.onresize = onResize;
+
+function generatePostBoxFromPost(exPost) {
+    let childDiv = document.createElement('div');
+
+    childDiv.className = 'post_box';
+
+    let href = exPost.directoryPath;
+    if (!href.endsWith('/')) {
+        href = exPost.directoryPath + '/';
+    }
+
+    let onclick = () => {
+        window.location.pathname = href;
+    }
+
+    if (exPost.post.thumbnailPath !== null) {
+        let thumbnail = document.createElement('img');
+        thumbnail.src = joinPath(exPost.directoryPath, exPost.post.thumbnailPath);
+        thumbnail.onclick = onclick;
+        thumbnail.className = 'post_thumbnail'
+
+        childDiv.append(thumbnail);
+    }
+
+    let title = document.createElement('p');
+    title.classList = 'post_title';
+    let titleLink = document.createElement('a');
+    titleLink.innerText = exPost.post.postTitle;
+    titleLink.href = href;
+    titleLink.className = 'post_title';
+
+    title.appendChild(titleLink);
+
+    childDiv.append(title);
+
+    return childDiv;
+}
+
+
+(async () => {
+    let list = [];
+    let fetchedList = true;
+
+    try {
+        let fetched = await fetch('./postlist');
+        let tmpList = await fetched.json();
+        list = tmpList;
+    }
+    catch (err) {
+        fetchedList = false;
+        console.error(err);
+    }
+
+    if(fetchedList){
+        //construct Date Object (fectched time is just a stirng I believe)
+        for(const entry of list){
+            entry.post.time = new Date(entry.post.time);
+        }
+
+        //sort list by a date
+        list.sort((a, b)=>{
+            return b.post.time.getTime() - a.post.time.getTime();
+        })
+
+        for (const entry of list) {
+            POST_ELEMENTS.push(generatePostBoxFromPost(entry));
+        }
+    }
+    else{
+        let errorDiv = document.getElementById('error-message');
+        errorDiv.style.visibility = 'visible';
+        errorDiv.innerText = 'Failed to get posts'
+    }
+
+    if(POST_ELEMENTS.length === 0){
+        document.getElementById('empty-list').style.visibility = "visible";
+    }
+
+    onResize();
+})();

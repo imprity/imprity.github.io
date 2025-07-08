@@ -76,6 +76,11 @@ func main() {
 		if err != nil {
 			ErrLogger.Fatal(err)
 		}
+
+		err = CompileBlog(PostsPath, postList, PostsOutPath)
+		if err != nil {
+			ErrLogger.Fatal(err)
+		}
 	}
 
 	Logger.Printf("serving http://localhost:6969")

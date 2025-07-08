@@ -66,6 +66,11 @@ class BomFactory {
         return bom;
     }
 }
+class PostListContainer {
+    constructor() {
+        this.Posts = [];
+    }
+}
 class PostContainer {
     constructor() {
         this.UUID = "";
@@ -83,12 +88,12 @@ class Post {
         this.date = "";
         this.dir = "";
     }
-    setFromPostContainer(container) {
-        this.uuid = container.UUID;
-        this.name = container.Name;
-        this.type = container.Type;
-        this.date = container.Date;
-        this.dir = container.Dir;
+    setFromPostJsonOrThrow(json) {
+        this.uuid = json.UUID;
+        this.name = json.Name;
+        this.type = json.Type;
+        this.date = json.Date;
+        this.dir = json.Dir;
     }
     toPostContainer() {
         const container = new PostContainer();
@@ -126,36 +131,17 @@ class Post {
         return clone;
     }
 }
-class PostListContainer {
-    constructor() {
-        this.Posts = [];
+function parsePostListJsonOrThrow(json) {
+    let posts = new Map();
+    if (json.Posts === null) {
+        return posts;
     }
-}
-function objHasMatchingKeys(obj, instance, forgiveMissingProperties) {
-    const keys = Reflect.ownKeys(instance);
-    for (const key of keys) {
-        const instanceType = typeof instance[key];
-        const objType = typeof obj[key];
-        if (forgiveMissingProperties && objType === 'undefined') {
-            continue;
-        }
-        if (instanceType !== objType) {
-            return false;
-        }
-        if (instanceType == "object") {
-            if (Array.isArray(instance[key])) {
-                if (!Array.isArray(obj[key])) {
-                    return false;
-                }
-            }
-            else {
-                if (!objHasMatchingKeys(instance[key], obj[key], forgiveMissingProperties)) {
-                    return false;
-                }
-            }
-        }
+    for (const p of json.Posts) {
+        const post = new Post();
+        post.setFromPostJsonOrThrow(p);
+        posts.set(post.uuid, post);
     }
-    return true;
+    return posts;
 }
 class Stack {
     constructor() {
@@ -432,7 +418,6 @@ class PostList {
             containerDiv: containerDiv,
             markedForDeletion: markedForDeletion
         };
-        // this.listEntries.push(entry)
         this.listEntries.set(entry.post.uuid, entry);
         {
             handle.addEventListener('focus', (e) => {
@@ -622,8 +607,10 @@ class PostList {
                 return json;
             });
             let json;
+            let posts;
             try {
                 json = yield makeRequest();
+                posts = parsePostListJsonOrThrow(json.PostList);
             }
             catch (err) {
                 console.error(err);
@@ -635,15 +622,10 @@ class PostList {
             }
             this.oldPosts.clear();
             this.newPosts.clear();
-            const dummyContainer = new PostContainer();
-            for (const p of json.PostList.Posts) {
-                if (objHasMatchingKeys(p, dummyContainer, false)) {
-                    const post = new Post();
-                    post.setFromPostContainer(p);
-                    this.oldPosts.set(post.uuid, post);
-                    this.newPosts.set(post.uuid, post);
-                    this.addEntry(post, false);
-                }
+            for (const post of posts.values()) {
+                this.oldPosts.set(post.uuid, post);
+                this.newPosts.set(post.uuid, post);
+                this.addEntry(post, false);
             }
             report('SUCCESS', false);
         });
@@ -666,30 +648,17 @@ class PostList {
         return json;
     });
     let json;
+    let oldPosts;
+    let newPosts;
     try {
         json = yield makeRequest();
+        oldPosts = parsePostListJsonOrThrow(json.Old);
+        newPosts = parsePostListJsonOrThrow(json.New);
     }
     catch (err) {
         console.error(err);
         report('GET request failed, check console for details', true);
         return;
-    }
-    var oldPosts = new Map();
-    var newPosts = new Map();
-    const dummyContainer = new PostContainer();
-    for (const p of json.Old.Posts) {
-        if (objHasMatchingKeys(p, dummyContainer, false)) {
-            const post = new Post();
-            post.setFromPostContainer(p);
-            oldPosts.set(post.uuid, post);
-        }
-    }
-    for (const p of json.New.Posts) {
-        if (objHasMatchingKeys(p, dummyContainer, false)) {
-            const post = new Post();
-            post.setFromPostContainer(p);
-            newPosts.set(post.uuid, post);
-        }
     }
     postList.setPostList(oldPosts, newPosts);
 }))();

@@ -349,8 +349,13 @@ class PostList {
         }
 
         let json
+        let posts: Map<string, Post>
+
         try {
             json = await makeRequest()
+
+            posts = parsePostListJsonOrThrow(json.PostList)
+
         } catch (err) {
             console.error(err)
             report('submit failed, check console for details', true)
@@ -364,18 +369,11 @@ class PostList {
         this.oldPosts.clear()
         this.newPosts.clear()
 
-        const dummyContainer = new PostContainer()
+        for (const post of posts.values()) {
+            this.oldPosts.set(post.uuid, post)
+            this.newPosts.set(post.uuid, post)
 
-        for (const p of json.PostList.Posts) {
-            if (objHasMatchingKeys(p, dummyContainer, false)) {
-                const post = new Post()
-                post.setFromPostContainer(p)
-
-                this.oldPosts.set(post.uuid, post)
-                this.newPosts.set(post.uuid, post)
-
-                this.addEntry(post, false)
-            }
+            this.addEntry(post, false)
         }
 
         report('SUCCESS', false)
@@ -404,33 +402,18 @@ class PostList {
     }
 
     let json
+
+    let oldPosts: Map<string, Post>
+    let newPosts: Map<string, Post>
     try {
         json = await makeRequest()
+
+        oldPosts = parsePostListJsonOrThrow(json.Old)
+        newPosts = parsePostListJsonOrThrow(json.New)
     } catch (err) {
         console.error(err)
         report('GET request failed, check console for details', true)
         return
-    }
-
-    var oldPosts: Map<string, Post> = new Map()
-    var newPosts: Map<string, Post> = new Map()
-
-    const dummyContainer = new PostContainer()
-
-    for (const p of json.Old.Posts) {
-        if (objHasMatchingKeys(p, dummyContainer, false)) {
-            const post = new Post()
-            post.setFromPostContainer(p)
-            oldPosts.set(post.uuid, post)
-        }
-    }
-
-    for (const p of json.New.Posts) {
-        if (objHasMatchingKeys(p, dummyContainer, false)) {
-            const post = new Post()
-            post.setFromPostContainer(p)
-            newPosts.set(post.uuid, post)
-        }
     }
 
     postList.setPostList(oldPosts, newPosts)

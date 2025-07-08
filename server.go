@@ -14,6 +14,12 @@ func StartServer() error {
 	http.Handle("/", LogReqest(NoCache(fileServer)))
 	http.Handle("/api/", LogReqest(&AdminAPIHandler{}))
 
+	if FlagTest {
+		testSever := http.FileServer(http.Dir("./test"))
+		http.Handle("/post-list.json", testSever)
+		http.Handle("/public/", testSever)
+	}
+
 	err := http.ListenAndServe(":6969", nil)
 	if err != nil {
 		return err
