@@ -15,7 +15,7 @@ func StartServer() error {
 	http.Handle("/api/", LogReqest(&AdminAPIHandler{}))
 
 	if FlagTest {
-		testSever := http.FileServer(http.Dir("./test"))
+		testSever := LogReqest(NoCache(http.FileServer(http.Dir("./test"))))
 		http.Handle("/post-list.json", testSever)
 		http.Handle("/public/", testSever)
 	}
@@ -55,14 +55,6 @@ func LogReqest(h http.Handler) http.Handler {
 
 	return http.HandlerFunc(fn)
 }
-
-// func ProperMimeType(dir http.Dir) http.Handler {
-// 	fn := func(w http.ResponseWriter, r *http.Request) {
-// 		http.ServeContent(w, r, )
-// 	}
-//
-// 	return http.HandlerFunc(fn)
-// }
 
 func NoCache(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {

@@ -96,3 +96,7 @@ func CopyFile(src, dst string) error {
 
 	return nil
 }
+
+func ExtLowered(name string) string {
+	return strings.ToLower(filepath.Ext(name))
+}

@@ -78,6 +78,8 @@ class PostContainer {
         this.Type = "";
         this.Date = "";
         this.Dir = "";
+        this.HasThumbnail = false;
+        this.Thumbnail = "";
     }
 }
 class Post {
@@ -87,13 +89,31 @@ class Post {
         this.type = "";
         this.date = "";
         this.dir = "";
+        this.hasThumbnail = false;
+        this.thumbnail = "";
     }
     setFromPostJsonOrThrow(json) {
-        this.uuid = json.UUID;
-        this.name = json.Name;
-        this.type = json.Type;
-        this.date = json.Date;
-        this.dir = json.Dir;
+        const expect = (value, type, must) => {
+            if (!must && value === null || value === undefined) {
+                switch (type) {
+                    case "string": return "";
+                    case "boolean": return false;
+                    case "number": return 0;
+                }
+            }
+            const actualType = typeof value;
+            if (actualType !== type) {
+                throw new Error(`wrong type, expected ${type}, got ${actualType}`);
+            }
+            return value;
+        };
+        this.uuid = expect(json.UUID, 'string', true);
+        this.name = expect(json.Name, 'string', true);
+        this.type = expect(json.Type, 'string', true);
+        this.date = expect(json.Date, 'string', true);
+        this.dir = expect(json.Dir, 'string', true);
+        this.hasThumbnail = expect(json.HasThumbnail, 'boolean', false);
+        this.thumbnail = expect(json.Thumbnail, 'string', false);
     }
     toPostContainer() {
         const container = new PostContainer();
@@ -102,7 +122,23 @@ class Post {
         container.Type = this.type;
         container.Date = this.date;
         container.Dir = this.dir;
+        container.HasThumbnail = this.hasThumbnail;
+        container.Thumbnail = this.thumbnail;
         return container;
+    }
+    clone() {
+        const clone = new Post();
+        for (const key of Object.keys(this)) {
+            const val = this[key];
+            const valType = typeof val;
+            if (valType === 'object' || Array.isArray(val)) {
+                throw new Error('TODO: support cloning of object or array');
+            }
+            if (valType === "string" || valType === "number" || valType === "boolean") {
+                clone[key] = val;
+            }
+        }
+        return clone;
     }
     getDateTimestamp() {
         return Date.parse(this.date);
@@ -120,15 +156,6 @@ class Post {
             }
         }
         return false;
-    }
-    clone() {
-        const clone = new Post();
-        clone.uuid = this.uuid;
-        clone.name = this.name;
-        clone.type = this.type;
-        clone.date = this.date;
-        clone.dir = this.dir;
-        return clone;
     }
 }
 function parsePostListJsonOrThrow(json) {
@@ -389,10 +416,10 @@ class PostList {
             }
         }
         const allPosts = new Map();
-        for (const p of oldPosts.values()) {
+        for (const p of addedPosts.values()) {
             allPosts.set(p.uuid, p);
         }
-        for (const p of addedPosts.values()) {
+        for (const p of oldPosts.values()) {
             allPosts.set(p.uuid, p);
         }
         for (let post of allPosts.values()) {

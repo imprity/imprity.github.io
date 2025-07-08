@@ -72,6 +72,9 @@ type Post struct {
 	Type PostType
 	Date time.Time
 	Dir  string
+
+	HasThumbnail bool
+	Thumbnail    string
 }
 
 func (p Post) Clone() Post {
@@ -79,6 +82,7 @@ func (p Post) Clone() Post {
 
 	clone.Name = strings.Clone(p.Name)
 	clone.Dir = strings.Clone(p.Dir)
+	clone.Thumbnail = strings.Clone(p.Thumbnail)
 
 	return clone
 }
@@ -90,6 +94,9 @@ func (p *Post) Dump() {
 	fmt.Printf("Type : %v\n", p.Type)
 	fmt.Printf("Date : %v\n", p.Date)
 	fmt.Printf("Dir  : %v\n", p.Dir)
+	if p.HasThumbnail {
+		fmt.Printf("Thumbnail : %v\n", p.Thumbnail)
+	}
 }
 
 type PostList struct {
@@ -176,6 +183,33 @@ func GetPostUUIDFromDir(postDir string) (uuid.UUID, bool, error) {
 	return uuid.UUID{}, false, nil
 }
 
+func GetPostThumbnailFromDir(postDir string) (string, bool, error) {
+	dirents, err := os.ReadDir(postDir)
+	if err != nil {
+		return "", false, err
+	}
+
+	for _, dirent := range dirents {
+		if !dirent.Type().IsRegular() {
+			continue
+		}
+
+		name := dirent.Name()
+
+		if true &&
+			name == "post-thumbnail.jpeg" ||
+			name == "post-thumbnail.jpg" ||
+			name == "post-thumbnail.png" ||
+			name == "post-thumbnail.bmp" {
+
+			thumbnailPath := name
+			return thumbnailPath, true, nil
+		}
+	}
+
+	return "", false, nil
+}
+
 // try to load post list
 // file not existing isn't an error
 func LoadPostList(postListPath string) (PostList, error) {
@@ -238,20 +272,48 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 
 		postDirPath := filepath.Join(postRoot, postDir.Name())
 
+		// ===============
+		var post Post
+		// ===============
+
+		// =======================================================================
+		// first, we need to get things that we know just by looking at directory
+		// =======================================================================
+		post.Dir = postDir.Name()
+
+		// get post type
 		postType, err := GetPostTypeFromDir(postDirPath)
 		if err != nil {
 			return PostList{}, err
 		}
-
 		if postType == PostTypeNone {
 			continue
 		}
+		post.Type = postType
 
+		// get post thumbnail
+		postThumbnail, hasThumbnail, err := GetPostThumbnailFromDir(postDirPath)
+		if err != nil {
+			return PostList{}, err
+		}
+		post.Thumbnail = postThumbnail
+		post.HasThumbnail = hasThumbnail
+
+		// =======================================================================
+		// next we need to get uuid
+		// to see if this post is a newly created post or an old post.
+		//
+		// because if it's an old post,
+		// we want it's creation date and name to carry over
+		// =======================================================================
+
+		// tryi to find uuid
 		postUUID, foundUUIDFile, err := GetPostUUIDFromDir(postDirPath)
 		if err != nil {
 			return PostList{}, err
 		}
 
+		// if we couldn't find one, create new uuid file
 		if !foundUUIDFile {
 			postUUID = uuid.New()
 			uuidPath := filepath.Join(postDirPath, PostUUIDFileName)
@@ -274,10 +336,9 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 			}
 		}
 
-		var post Post
-
 		post.UUID = postUUID
 
+		// carry over name and date
 		if alreadyExists {
 			post.Name = alreadyExistingOldPost.Name
 			post.Date = alreadyExistingOldPost.Date
@@ -285,9 +346,6 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 			post.Name = postDir.Name()
 			post.Date = now
 		}
-
-		post.Type = postType
-		post.Dir = postDir.Name()
 
 		if alreadyExists {
 			updatedPosts = append(updatedPosts, post)
@@ -307,12 +365,12 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 
 	// sort newPosts
 	slices.SortFunc(newPosts, func(a, b Post) int {
-		return strings.Compare(a.Name, b.Name)
+		return strings.Compare(b.Name, a.Name)
 	})
 
-	updatedPosts = append(updatedPosts, newPosts...)
+	newPosts = append(newPosts, updatedPosts...)
 
-	return PostList{Posts: updatedPosts}, nil
+	return PostList{Posts: newPosts}, nil
 }
 
 func CompileBlog(postRoot string, postList PostList, outDir string) error {

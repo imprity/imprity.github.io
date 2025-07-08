@@ -78,6 +78,8 @@ class PostContainer {
         this.Type = "";
         this.Date = "";
         this.Dir = "";
+        this.HasThumbnail = false;
+        this.Thumbnail = "";
     }
 }
 class Post {
@@ -87,13 +89,31 @@ class Post {
         this.type = "";
         this.date = "";
         this.dir = "";
+        this.hasThumbnail = false;
+        this.thumbnail = "";
     }
     setFromPostJsonOrThrow(json) {
-        this.uuid = json.UUID;
-        this.name = json.Name;
-        this.type = json.Type;
-        this.date = json.Date;
-        this.dir = json.Dir;
+        const expect = (value, type, must) => {
+            if (!must && value === null || value === undefined) {
+                switch (type) {
+                    case "string": return "";
+                    case "boolean": return false;
+                    case "number": return 0;
+                }
+            }
+            const actualType = typeof value;
+            if (actualType !== type) {
+                throw new Error(`wrong type, expected ${type}, got ${actualType}`);
+            }
+            return value;
+        };
+        this.uuid = expect(json.UUID, 'string', true);
+        this.name = expect(json.Name, 'string', true);
+        this.type = expect(json.Type, 'string', true);
+        this.date = expect(json.Date, 'string', true);
+        this.dir = expect(json.Dir, 'string', true);
+        this.hasThumbnail = expect(json.HasThumbnail, 'boolean', false);
+        this.thumbnail = expect(json.Thumbnail, 'string', false);
     }
     toPostContainer() {
         const container = new PostContainer();
@@ -102,7 +122,23 @@ class Post {
         container.Type = this.type;
         container.Date = this.date;
         container.Dir = this.dir;
+        container.HasThumbnail = this.hasThumbnail;
+        container.Thumbnail = this.thumbnail;
         return container;
+    }
+    clone() {
+        const clone = new Post();
+        for (const key of Object.keys(this)) {
+            const val = this[key];
+            const valType = typeof val;
+            if (valType === 'object' || Array.isArray(val)) {
+                throw new Error('TODO: support cloning of object or array');
+            }
+            if (valType === "string" || valType === "number" || valType === "boolean") {
+                clone[key] = val;
+            }
+        }
+        return clone;
     }
     getDateTimestamp() {
         return Date.parse(this.date);
@@ -120,15 +156,6 @@ class Post {
             }
         }
         return false;
-    }
-    clone() {
-        const clone = new Post();
-        clone.uuid = this.uuid;
-        clone.name = this.name;
-        clone.type = this.type;
-        clone.date = this.date;
-        clone.dir = this.dir;
-        return clone;
     }
 }
 function parsePostListJsonOrThrow(json) {
@@ -343,7 +370,6 @@ function blurItAndChildren(element) {
     };
     toRecurse(element);
 }
-// let COLUMN_CONTAINER = mustGetElementById('column-container')
 let ColumnContainer = mustGetElementById('column-container');
 let Columns = [];
 let PostElements = [];
@@ -387,19 +413,17 @@ function generatePostBoxFromPost(post) {
     let childDiv = document.createElement('div');
     childDiv.className = 'post_box';
     let href = "/public/" + post.dir + "/";
-    // TODO : bring back thumbnails
-    // let onclick = () => {
-    //     window.location.pathname = href;
-    // }
-    //
-    // if (exPost.post.thumbnailPath !== null) {
-    //     let thumbnail = document.createElement('img');
-    //     thumbnail.src = joinPath(exPost.directoryPath, exPost.post.thumbnailPath);
-    //     thumbnail.onclick = onclick;
-    //     thumbnail.className = 'post_thumbnail'
-    //
-    //     childDiv.append(thumbnail);
-    // }
+    let onclick = () => {
+        window.location.pathname = href;
+    };
+    if (post.hasThumbnail) {
+        console.log(`creating thumbnail for ${post.name}`);
+        let thumbnail = document.createElement('img');
+        thumbnail.src = "/public/" + post.dir + "/" + post.thumbnail;
+        thumbnail.onclick = onclick;
+        thumbnail.className = 'post_thumbnail';
+        childDiv.append(thumbnail);
+    }
     let title = document.createElement('p');
     title.classList = 'post_title';
     let titleLink = document.createElement('a');

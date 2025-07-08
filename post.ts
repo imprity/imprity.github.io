@@ -9,6 +9,9 @@ class PostContainer {
     Type: string = ""
     Date: string = ""
     Dir: string = ""
+
+    HasThumbnail: boolean = false
+    Thumbnail: string = ""
 }
 
 class Post {
@@ -19,13 +22,40 @@ class Post {
     date: string = ""
     dir: string = ""
 
-    setFromPostJsonOrThrow(json: any) {
-        this.uuid = json.UUID
+    hasThumbnail: boolean = false
+    thumbnail: string = ""
 
-        this.name = json.Name
-        this.type = json.Type
-        this.date = json.Date
-        this.dir = json.Dir
+    setFromPostJsonOrThrow(json: any) {
+        const expect = (
+            value: any,
+            type: ("string" | "boolean" | "number"),
+            must: boolean
+        ): any => {
+            if (!must && value === null || value === undefined) {
+                switch (type) {
+                    case "string": return ""
+                    case "boolean": return false
+                    case "number": return 0
+                }
+            }
+
+            const actualType = typeof value
+            if (actualType !== type) {
+                throw new Error(`wrong type, expected ${type}, got ${actualType}`)
+            }
+
+            return value
+        }
+
+        this.uuid = expect(json.UUID, 'string', true)
+
+        this.name = expect(json.Name, 'string', true)
+        this.type = expect(json.Type, 'string', true)
+        this.date = expect(json.Date, 'string', true)
+        this.dir = expect(json.Dir, 'string', true)
+
+        this.hasThumbnail = expect(json.HasThumbnail, 'boolean', false)
+        this.thumbnail = expect(json.Thumbnail, 'string', false)
     }
 
     toPostContainer(): PostContainer {
@@ -38,7 +68,30 @@ class Post {
         container.Date = this.date
         container.Dir = this.dir
 
+        container.HasThumbnail = this.hasThumbnail
+        container.Thumbnail = this.thumbnail
+
         return container
+    }
+
+    clone(): Post {
+        const clone = new Post()
+
+        for (const key of Object.keys(this)) {
+            const val = this[key as keyof Post]
+
+            const valType = typeof val
+
+            if (valType === 'object' || Array.isArray(val)) {
+                throw new Error('TODO: support cloning of object or array')
+            }
+
+            if (valType === "string" || valType === "number" || valType === "boolean") {
+                (clone as any)[key as keyof Post] = val
+            }
+        }
+
+        return clone
     }
 
     getDateTimestamp(): number {
@@ -60,18 +113,6 @@ class Post {
         }
 
         return false
-    }
-
-    clone(): Post {
-        const clone = new Post()
-        clone.uuid = this.uuid
-
-        clone.name = this.name
-        clone.type = this.type
-        clone.date = this.date
-        clone.dir = this.dir
-
-        return clone
     }
 }
 

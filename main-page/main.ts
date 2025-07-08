@@ -1,4 +1,3 @@
-// let COLUMN_CONTAINER = mustGetElementById('column-container')
 let ColumnContainer = mustGetElementById('column-container')
 
 let Columns: Array<HTMLElement> = [];
@@ -57,19 +56,19 @@ function generatePostBoxFromPost(post: Post) {
 
     let href = "/public/" + post.dir + "/"
 
-    // TODO : bring back thumbnails
-    // let onclick = () => {
-    //     window.location.pathname = href;
-    // }
-    //
-    // if (exPost.post.thumbnailPath !== null) {
-    //     let thumbnail = document.createElement('img');
-    //     thumbnail.src = joinPath(exPost.directoryPath, exPost.post.thumbnailPath);
-    //     thumbnail.onclick = onclick;
-    //     thumbnail.className = 'post_thumbnail'
-    //
-    //     childDiv.append(thumbnail);
-    // }
+    let onclick = () => {
+        window.location.pathname = href;
+    }
+
+    if (post.hasThumbnail) {
+        console.log(`creating thumbnail for ${post.name}`)
+        let thumbnail = document.createElement('img');
+        thumbnail.src = "/public/" + post.dir + "/" + post.thumbnail
+        thumbnail.onclick = onclick;
+        thumbnail.className = 'post_thumbnail'
+
+        childDiv.append(thumbnail);
+    }
 
     let title = document.createElement('p');
     title.classList = 'post_title';

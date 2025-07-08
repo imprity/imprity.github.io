@@ -69,10 +69,10 @@ class PostList {
         }
 
         const allPosts: Map<string, Post> = new Map()
-        for (const p of oldPosts.values()) {
+        for (const p of addedPosts.values()) {
             allPosts.set(p.uuid, p)
         }
-        for (const p of addedPosts.values()) {
+        for (const p of oldPosts.values()) {
             allPosts.set(p.uuid, p)
         }
 
