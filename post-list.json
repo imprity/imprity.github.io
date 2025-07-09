@@ -1,18 +1,24 @@
 {
   "Posts": [
     {
-      "UUID": "6b7a78ae-b589-4e43-af48-0446f438f086",
-      "Name": "gay shit",
-      "Type": "HTML",
-      "Date": "2025-06-28T04:55:08.4218432+09:00",
-      "Dir": "post1"
-    },
-    {
       "UUID": "8a91e244-77a2-4fd5-b186-1770aa5950df",
+      "FileHash": "h1:vZIdbKqIR23VQRjM/UK1iDi3BE6ei/bPjEues2t2UDw=",
       "Name": "fart dickinson",
       "Type": "HTML",
-      "Date": "3456-11-30T19:55:08.422Z",
-      "Dir": "post2"
+      "Date": "2025-07-10T01:48:47.0083945+09:00",
+      "Dir": "post2",
+      "HasThumbnail": false,
+      "Thumbnail": ""
+    },
+    {
+      "UUID": "6b7a78ae-b589-4e43-af48-0446f438f086",
+      "FileHash": "h1:wswVu3K+Qhf+Kk1AZVVO3vruBxzQt0pvlu2jT8VPF2w=",
+      "Name": "gay stuff",
+      "Type": "HTML",
+      "Date": "2025-07-10T01:48:47.0083945+09:00",
+      "Dir": "post1",
+      "HasThumbnail": false,
+      "Thumbnail": ""
     }
   ]
 }

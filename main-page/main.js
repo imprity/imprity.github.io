@@ -96,7 +96,7 @@ class Post {
     }
     setFromPostJsonOrThrow(json) {
         const expect = (value, type, must) => {
-            if (!must && value === null || value === undefined) {
+            if (!must && (value === null || value === undefined)) {
                 switch (type) {
                     case "string": return "";
                     case "boolean": return false;
