@@ -5,6 +5,8 @@ class PostListContainer {
 class PostContainer {
     UUID: string = ""
 
+    FileHash: string = ""
+
     Name: string = ""
     Type: string = ""
     Date: string = ""
@@ -16,6 +18,8 @@ class PostContainer {
 
 class Post {
     uuid: string = ""
+
+    fileHash: string = ""
 
     name: string = ""
     type: string = ""
@@ -49,6 +53,8 @@ class Post {
 
         this.uuid = expect(json.UUID, 'string', true)
 
+        this.fileHash = expect(json.FileHash, 'string', true)
+
         this.name = expect(json.Name, 'string', true)
         this.type = expect(json.Type, 'string', true)
         this.date = expect(json.Date, 'string', true)
@@ -62,6 +68,8 @@ class Post {
         const container = new PostContainer()
 
         container.UUID = this.uuid
+
+        container.FileHash = this.fileHash
 
         container.Name = this.name
         container.Type = this.type

@@ -74,6 +74,7 @@ class PostListContainer {
 class PostContainer {
     constructor() {
         this.UUID = "";
+        this.FileHash = "";
         this.Name = "";
         this.Type = "";
         this.Date = "";
@@ -85,6 +86,7 @@ class PostContainer {
 class Post {
     constructor() {
         this.uuid = "";
+        this.fileHash = "";
         this.name = "";
         this.type = "";
         this.date = "";
@@ -108,6 +110,7 @@ class Post {
             return value;
         };
         this.uuid = expect(json.UUID, 'string', true);
+        this.fileHash = expect(json.FileHash, 'string', true);
         this.name = expect(json.Name, 'string', true);
         this.type = expect(json.Type, 'string', true);
         this.date = expect(json.Date, 'string', true);
@@ -118,6 +121,7 @@ class Post {
     toPostContainer() {
         const container = new PostContainer();
         container.UUID = this.uuid;
+        container.FileHash = this.fileHash;
         container.Name = this.name;
         container.Type = this.type;
         container.Date = this.date;
@@ -370,6 +374,13 @@ function blurItAndChildren(element) {
     };
     toRecurse(element);
 }
+var PostStatus;
+(function (PostStatus) {
+    PostStatus[PostStatus["Normal"] = 0] = "Normal";
+    PostStatus[PostStatus["Added"] = 1] = "Added";
+    PostStatus[PostStatus["Deleted"] = 2] = "Deleted";
+    PostStatus[PostStatus["Changed"] = 3] = "Changed";
+})(PostStatus || (PostStatus = {}));
 function report(text, isError) {
     const reportText = document.getElementById('report-text');
     if (reportText !== null) {
@@ -423,27 +434,43 @@ class PostList {
             allPosts.set(p.uuid, p);
         }
         for (let post of allPosts.values()) {
-            const markedForDeletion = deletedPosts.has(post.uuid);
-            this.addEntry(post.clone(), markedForDeletion);
+            let postStatus = PostStatus.Normal;
+            if (this.oldPosts.has(post.uuid) &&
+                this.newPosts.has(post.uuid) &&
+                this.oldPosts.get(post.uuid).hasChanged(this.newPosts.get(post.uuid))) {
+                postStatus = PostStatus.Changed;
+            }
+            if (addedPosts.has(post.uuid)) {
+                postStatus = PostStatus.Added;
+            }
+            if (deletedPosts.has(post.uuid)) {
+                postStatus = PostStatus.Deleted;
+            }
+            if (this.newPosts.has(post.uuid)) {
+                this.addEntry(this.newPosts.get(post.uuid).clone(), postStatus);
+            }
+            else {
+                this.addEntry(this.oldPosts.get(post.uuid).clone(), postStatus);
+            }
         }
     }
-    addEntry(post, markedForDeletion) {
+    addEntry(post, postStatus) {
         const f = new BomFactory();
         let containerDiv;
         let nameInput;
         let dateInput;
         let dateStatus;
-        let deleteStatus;
+        let postStatusDisplay;
         let handle;
         let listOverlay;
-        containerDiv = f.create('div').classes('list-container-div').add((f.create('div').classes('list-content-div').add(f.create('label').text('name'), (nameInput = f.create('div').classes('list-name-input').set('contenteditable', 'plaintext-only').html), f.create('label').text('YYYY/MM/DD ').add((dateInput = f.create('input').classes('date-input').set('type', 'text').set('size', '15').html), (dateStatus = f.create('span').text('\u2705').html)), (deleteStatus = f.create('p').text('DELETED').html)).html), (handle = f.create('div').set('tabindex', '0').classes('list-handle', 'noselect').text(':::::').html), (listOverlay = f.create('div').classes('list-overlay').html)).set('post-uuid', post.uuid).html;
+        containerDiv = f.create('div').classes('list-container-div').add((f.create('div').classes('list-content-div').add(f.create('label').text('name'), (nameInput = f.create('div').classes('list-name-input').set('contenteditable', 'plaintext-only').html), f.create('label').text('YYYY/MM/DD ').add((dateInput = f.create('input').classes('date-input').set('type', 'text').set('size', '15').html), (dateStatus = f.create('span').text('\u2705').html)), (postStatusDisplay = f.create('p').classes('post-status-display').text('DELETED').html)).html), (handle = f.create('div').set('tabindex', '0').classes('list-handle', 'noselect').text(':::::').html), (listOverlay = f.create('div').classes('list-overlay').html)).set('post-uuid', post.uuid).html;
         this.listDiv.appendChild(containerDiv);
         (listOverlay);
         const entry = {
             id: getNewPostListEntryId(),
             post: post,
+            postStatus: postStatus,
             containerDiv: containerDiv,
-            markedForDeletion: markedForDeletion
         };
         this.listEntries.set(entry.post.uuid, entry);
         {
@@ -585,11 +612,37 @@ class PostList {
                 dateStatus.innerText = '\u2705';
             });
         }
-        // add delete status
         {
-            deleteStatus.style.color = 'var(--red)';
-            if (!entry.markedForDeletion) {
-                deleteStatus.style.display = "none";
+            switch (entry.postStatus) {
+                case PostStatus.Normal:
+                    {
+                        postStatusDisplay.style.display = "none";
+                    }
+                    break;
+                case PostStatus.Added:
+                    {
+                        postStatusDisplay.style.backgroundColor = 'var(--green)';
+                        postStatusDisplay.innerText = 'ADDED';
+                    }
+                    break;
+                case PostStatus.Deleted:
+                    {
+                        postStatusDisplay.style.backgroundColor = 'var(--red)';
+                        postStatusDisplay.innerText = 'DELETED';
+                    }
+                    break;
+                case PostStatus.Changed:
+                    {
+                        postStatusDisplay.style.backgroundColor = 'var(--blue)';
+                        postStatusDisplay.innerText = "CHANGED";
+                    }
+                    break;
+                default:
+                    {
+                        postStatusDisplay.style.backgroundColor = 'var(--red)';
+                        postStatusDisplay.innerText = "UNKNOWN";
+                    }
+                    break;
             }
         }
     }
@@ -606,7 +659,7 @@ class PostList {
                 if (listEntry === undefined) {
                     continue;
                 }
-                if (listEntry.markedForDeletion) {
+                if (listEntry.postStatus === PostStatus.Deleted) {
                     continue;
                 }
                 containers.push(listEntry.post.toPostContainer());
@@ -652,7 +705,7 @@ class PostList {
             for (const post of posts.values()) {
                 this.oldPosts.set(post.uuid, post);
                 this.newPosts.set(post.uuid, post);
-                this.addEntry(post, false);
+                this.addEntry(post, PostStatus.Normal);
             }
             report('SUCCESS', false);
         });

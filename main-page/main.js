@@ -74,6 +74,7 @@ class PostListContainer {
 class PostContainer {
     constructor() {
         this.UUID = "";
+        this.FileHash = "";
         this.Name = "";
         this.Type = "";
         this.Date = "";
@@ -85,6 +86,7 @@ class PostContainer {
 class Post {
     constructor() {
         this.uuid = "";
+        this.fileHash = "";
         this.name = "";
         this.type = "";
         this.date = "";
@@ -108,6 +110,7 @@ class Post {
             return value;
         };
         this.uuid = expect(json.UUID, 'string', true);
+        this.fileHash = expect(json.FileHash, 'string', true);
         this.name = expect(json.Name, 'string', true);
         this.type = expect(json.Type, 'string', true);
         this.date = expect(json.Date, 'string', true);
@@ -118,6 +121,7 @@ class Post {
     toPostContainer() {
         const container = new PostContainer();
         container.UUID = this.uuid;
+        container.FileHash = this.fileHash;
         container.Name = this.name;
         container.Type = this.type;
         container.Date = this.date;

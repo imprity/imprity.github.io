@@ -15,6 +15,8 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 
 	"github.com/google/uuid"
+
+	"golang.org/x/mod/sumdb/dirhash"
 )
 
 type PostType int
@@ -68,6 +70,8 @@ func (pt *PostType) UnmarshalJSON(jsonValue []byte) error {
 type Post struct {
 	UUID uuid.UUID
 
+	FileHash string
+
 	Name string
 	Type PostType
 	Date time.Time
@@ -80,8 +84,11 @@ type Post struct {
 func (p Post) Clone() Post {
 	clone := p
 
+	clone.FileHash = strings.Clone(p.FileHash)
+
 	clone.Name = strings.Clone(p.Name)
 	clone.Dir = strings.Clone(p.Dir)
+
 	clone.Thumbnail = strings.Clone(p.Thumbnail)
 
 	return clone
@@ -89,6 +96,8 @@ func (p Post) Clone() Post {
 
 func (p *Post) Dump() {
 	fmt.Printf("UUID : %v\n", p.UUID)
+
+	fmt.Printf("FileHash: %v\n", p.FileHash)
 
 	fmt.Printf("Name : %v\n", p.Name)
 	fmt.Printf("Type : %v\n", p.Type)
@@ -130,29 +139,6 @@ func SavePostList(postList PostList, name string) error {
 
 const PostUUIDFileName = "post-uuid.txt"
 
-func GetPostTypeFromDir(postDir string) (PostType, error) {
-	dirents, err := os.ReadDir(postDir)
-	if err != nil {
-		return PostTypeNone, err
-	}
-
-	for _, dirent := range dirents {
-		if !dirent.Type().IsRegular() {
-			continue
-		}
-
-		if dirent.Name() == "index.html" {
-			return PostTypeHTML, nil
-		}
-
-		if dirent.Name() == "index.md" {
-			return PostTypeMarkDown, nil
-		}
-	}
-
-	return PostTypeNone, nil
-}
-
 func GetPostUUIDFromDir(postDir string) (uuid.UUID, bool, error) {
 	dirents, err := os.ReadDir(postDir)
 	if err != nil {
@@ -181,6 +167,33 @@ func GetPostUUIDFromDir(postDir string) (uuid.UUID, bool, error) {
 	}
 
 	return uuid.UUID{}, false, nil
+}
+
+func GetPostFileHashFromDir(postDir string) (string, error) {
+	return dirhash.HashDir(postDir, "", dirhash.DefaultHash)
+}
+
+func GetPostTypeFromDir(postDir string) (PostType, error) {
+	dirents, err := os.ReadDir(postDir)
+	if err != nil {
+		return PostTypeNone, err
+	}
+
+	for _, dirent := range dirents {
+		if !dirent.Type().IsRegular() {
+			continue
+		}
+
+		if dirent.Name() == "index.html" {
+			return PostTypeHTML, nil
+		}
+
+		if dirent.Name() == "index.md" {
+			return PostTypeMarkDown, nil
+		}
+	}
+
+	return PostTypeNone, nil
 }
 
 func GetPostThumbnailFromDir(postDir string) (string, bool, error) {
@@ -276,10 +289,42 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 		var post Post
 		// ===============
 
+		// ===========================================
+		// first, try to find UUID, if you couldn't
+		// make one
+		// ===========================================
+
+		// try to find uuid
+		postUUID, foundUUIDFile, err := GetPostUUIDFromDir(postDirPath)
+		if err != nil {
+			return PostList{}, err
+		}
+
+		// if we couldn't find one, create new uuid file
+		if !foundUUIDFile {
+			postUUID = uuid.New()
+			uuidPath := filepath.Join(postDirPath, PostUUIDFileName)
+
+			err := os.WriteFile(uuidPath, []byte(postUUID.String()), 0664)
+			if err != nil {
+				return PostList{}, err
+			}
+		}
+
+		post.UUID = postUUID
+
 		// =======================================================================
-		// first, we need to get things that we know just by looking at directory
+		// next, we need to get things that we know just by looking at directory
 		// =======================================================================
+		// get post dir
 		post.Dir = postDir.Name()
+
+		// get post hash
+		postFileHash, err := GetPostFileHashFromDir(postDirPath)
+		if err != nil {
+			return PostList{}, err
+		}
+		post.FileHash = postFileHash
 
 		// get post type
 		postType, err := GetPostTypeFromDir(postDirPath)
@@ -300,43 +345,23 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 		post.HasThumbnail = hasThumbnail
 
 		// =======================================================================
-		// next we need to get uuid
-		// to see if this post is a newly created post or an old post.
+		// check if this post is a newly created post or an old post.
 		//
 		// because if it's an old post,
 		// we want it's creation date and name to carry over
 		// =======================================================================
-
-		// tryi to find uuid
-		postUUID, foundUUIDFile, err := GetPostUUIDFromDir(postDirPath)
-		if err != nil {
-			return PostList{}, err
-		}
-
-		// if we couldn't find one, create new uuid file
-		if !foundUUIDFile {
-			postUUID = uuid.New()
-			uuidPath := filepath.Join(postDirPath, PostUUIDFileName)
-
-			err := os.WriteFile(uuidPath, []byte(postUUID.String()), 0664)
-			if err != nil {
-				return PostList{}, err
-			}
-		}
 
 		// check if there already is a post with same uuid
 		alreadyExists := false
 		var alreadyExistingOldPost Post
 
 		for _, otherPost := range oldPosts.Posts {
-			if otherPost.UUID == postUUID {
+			if otherPost.UUID == post.UUID {
 				alreadyExists = true
 				alreadyExistingOldPost = otherPost
 				break
 			}
 		}
-
-		post.UUID = postUUID
 
 		// carry over name and date
 		if alreadyExists {

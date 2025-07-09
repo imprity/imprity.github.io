@@ -1,3 +1,10 @@
+enum PostStatus {
+    Normal,
+    Added,
+    Deleted,
+    Changed,
+}
+
 function report(text: string, isError: boolean) {
     const reportText = document.getElementById('report-text')
     if (reportText !== null) {
@@ -14,10 +21,9 @@ interface PostListEntry {
     id: number
 
     post: Post
+    postStatus: PostStatus
 
     containerDiv: HTMLElement
-
-    markedForDeletion: boolean
 }
 
 let PostListEntryIdMax = -1
@@ -77,19 +83,40 @@ class PostList {
         }
 
         for (let post of allPosts.values()) {
-            const markedForDeletion = deletedPosts.has(post.uuid)
-            this.addEntry(post.clone(), markedForDeletion)
+            let postStatus = PostStatus.Normal
+
+            if (
+                this.oldPosts.has(post.uuid) &&
+                this.newPosts.has(post.uuid) &&
+                this.oldPosts.get(post.uuid)!.hasChanged(this.newPosts.get(post.uuid)!)
+            ) {
+                postStatus = PostStatus.Changed
+            }
+
+            if (addedPosts.has(post.uuid)) {
+                postStatus = PostStatus.Added
+            }
+
+            if (deletedPosts.has(post.uuid)) {
+                postStatus = PostStatus.Deleted
+            }
+
+            if (this.newPosts.has(post.uuid)) {
+                this.addEntry(this.newPosts.get(post.uuid)!.clone(), postStatus)
+            } else {
+                this.addEntry(this.oldPosts.get(post.uuid)!.clone(), postStatus)
+            }
         }
     }
 
-    addEntry(post: Post, markedForDeletion: boolean) {
+    addEntry(post: Post, postStatus: PostStatus) {
         const f = new BomFactory()
 
         let containerDiv: HTMLElement
         let nameInput: HTMLElement
         let dateInput: HTMLInputElement
         let dateStatus: HTMLElement
-        let deleteStatus: HTMLParagraphElement
+        let postStatusDisplay: HTMLParagraphElement
         let handle: HTMLElement
         let listOverlay: HTMLElement
 
@@ -101,7 +128,7 @@ class PostList {
                     (dateInput = f.create('input').classes('date-input').set('type', 'text').set('size', '15').html as HTMLInputElement),
                     (dateStatus = f.create('span').text('\u2705').html),
                 ),
-                (deleteStatus = f.create('p').text('DELETED').html as HTMLParagraphElement)
+                (postStatusDisplay = f.create('p').classes('post-status-display').text('DELETED').html as HTMLParagraphElement)
             ).html),
             (handle = f.create('div').set('tabindex', '0').classes('list-handle', 'noselect').text(':::::').html),
             (listOverlay = f.create('div').classes('list-overlay').html)
@@ -111,11 +138,13 @@ class PostList {
 
             ; (listOverlay);
 
-        const entry = {
+        const entry: PostListEntry = {
             id: getNewPostListEntryId(),
+
             post: post,
+            postStatus: postStatus,
+
             containerDiv: containerDiv,
-            markedForDeletion: markedForDeletion
         }
 
         this.listEntries.set(entry.post.uuid, entry)
@@ -289,11 +318,27 @@ class PostList {
             })
         }
 
-        // add delete status
         {
-            deleteStatus.style.color = 'var(--red)'
-            if (!entry.markedForDeletion) {
-                deleteStatus.style.display = "none"
+            switch (entry.postStatus) {
+                case PostStatus.Normal: {
+                    postStatusDisplay.style.display = "none"
+                } break
+                case PostStatus.Added: {
+                    postStatusDisplay.style.backgroundColor = 'var(--green)'
+                    postStatusDisplay.innerText = 'ADDED'
+                } break
+                case PostStatus.Deleted: {
+                    postStatusDisplay.style.backgroundColor = 'var(--red)'
+                    postStatusDisplay.innerText = 'DELETED'
+                } break
+                case PostStatus.Changed: {
+                    postStatusDisplay.style.backgroundColor = 'var(--blue)'
+                    postStatusDisplay.innerText = "CHANGED"
+                } break
+                default: {
+                    postStatusDisplay.style.backgroundColor = 'var(--red)'
+                    postStatusDisplay.innerText = "UNKNOWN"
+                } break
             }
         }
     }
@@ -314,7 +359,7 @@ class PostList {
                 continue
             }
 
-            if (listEntry.markedForDeletion) {
+            if (listEntry.postStatus === PostStatus.Deleted) {
                 continue
             }
 
@@ -373,7 +418,7 @@ class PostList {
             this.oldPosts.set(post.uuid, post)
             this.newPosts.set(post.uuid, post)
 
-            this.addEntry(post, false)
+            this.addEntry(post, PostStatus.Normal)
         }
 
         report('SUCCESS', false)
