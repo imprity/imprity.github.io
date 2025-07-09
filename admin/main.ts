@@ -5,15 +5,14 @@ enum PostStatus {
     Changed,
 }
 
-function report(text: string, isError: boolean) {
+const ColorError = 'var(--red)'
+const ColorSuccess = 'var(--dark-green)'
+
+function report(text: string, color: string) {
     const reportText = document.getElementById('report-text')
     if (reportText !== null) {
         reportText.innerText = text
-        if (isError) {
-            reportText.style.color = 'var(--red)'
-        } else {
-            reportText.style.color = 'black'
-        }
+        reportText.style.color = color
     }
 }
 
@@ -40,15 +39,18 @@ class PostList {
 
     draggingEntry: PostListEntry | null = null
 
-    oldPosts: Map<string, Post>
-    newPosts: Map<string, Post>
+    savedOldPosts: Map<string, Post>
+    savedNewPosts: Map<string, Post>
+
+    savedAllPosts: Map<string, Post>
 
     constructor() {
         const listDiv = mustGetElementById('post-list')
         this.listDiv = listDiv
 
-        this.oldPosts = new Map()
-        this.newPosts = new Map()
+        this.savedOldPosts = new Map()
+        this.savedNewPosts = new Map()
+        this.savedAllPosts = new Map()
 
         const submitButton = mustGetElementById('submit-button')
         submitButton.onclick = async () => {
@@ -57,12 +59,18 @@ class PostList {
     }
 
     setPostList(oldPosts: Map<string, Post>, newPosts: Map<string, Post>) {
-        this.oldPosts = oldPosts
-        this.newPosts = newPosts
+        while (this.listDiv.children.length > 0) {
+            this.listDiv.children[0].remove()
+        }
+
+        this.savedAllPosts.clear()
+
+        this.savedOldPosts = oldPosts
+        this.savedNewPosts = newPosts
 
         const addedPosts: Map<string, Post> = new Map()
         for (const p of newPosts.values()) {
-            if (!oldPosts.has(p.uuid)) {
+            if (!this.savedOldPosts.has(p.uuid)) {
                 addedPosts.set(p.uuid, p)
             }
         }
@@ -74,21 +82,20 @@ class PostList {
             }
         }
 
-        const allPosts: Map<string, Post> = new Map()
         for (const p of addedPosts.values()) {
-            allPosts.set(p.uuid, p)
+            this.savedAllPosts.set(p.uuid, p)
         }
-        for (const p of oldPosts.values()) {
-            allPosts.set(p.uuid, p)
+        for (const p of this.savedOldPosts.values()) {
+            this.savedAllPosts.set(p.uuid, p)
         }
 
-        for (let post of allPosts.values()) {
+        for (let post of this.savedAllPosts.values()) {
             let postStatus = PostStatus.Normal
 
             if (
-                this.oldPosts.has(post.uuid) &&
-                this.newPosts.has(post.uuid) &&
-                this.oldPosts.get(post.uuid)!.hasChanged(this.newPosts.get(post.uuid)!)
+                this.savedOldPosts.has(post.uuid) &&
+                this.savedNewPosts.has(post.uuid) &&
+                this.savedOldPosts.get(post.uuid)!.hasChanged(this.savedNewPosts.get(post.uuid)!)
             ) {
                 postStatus = PostStatus.Changed
             }
@@ -101,10 +108,10 @@ class PostList {
                 postStatus = PostStatus.Deleted
             }
 
-            if (this.newPosts.has(post.uuid)) {
-                this.addEntry(this.newPosts.get(post.uuid)!.clone(), postStatus)
+            if (this.savedNewPosts.has(post.uuid)) {
+                this.addEntry(this.savedNewPosts.get(post.uuid)!.clone(), postStatus)
             } else {
-                this.addEntry(this.oldPosts.get(post.uuid)!.clone(), postStatus)
+                this.addEntry(this.savedOldPosts.get(post.uuid)!.clone(), postStatus)
             }
         }
     }
@@ -128,6 +135,7 @@ class PostList {
                     (dateInput = f.create('input').classes('date-input').set('type', 'text').set('size', '15').html as HTMLInputElement),
                     (dateStatus = f.create('span').text('\u2705').html),
                 ),
+                f.create('p').text(`dir: ${post.dir}`),
                 (postStatusDisplay = f.create('p').classes('post-status-display').text('DELETED').html as HTMLParagraphElement)
             ).html),
             (handle = f.create('div').set('tabindex', '0').classes('list-handle', 'noselect').text(':::::').html),
@@ -149,6 +157,15 @@ class PostList {
 
         this.listEntries.set(entry.post.uuid, entry)
 
+        const checkChange = () => {
+            if (this.userModifiedPost()) {
+                report('Changed', 'black')
+            } else {
+                report('', 'black')
+            }
+        }
+
+        // add order changing input
         {
             handle.addEventListener('focus', (e) => {
                 if (e.target === handle) {
@@ -176,11 +193,13 @@ class PostList {
                         nextSibling?.after(containerDiv)
                         handle.focus()
                         e.preventDefault()
+                        checkChange()
                     }
                     if (e.ctrlKey && e.code === 'ArrowUp') {
                         prevSibling?.before(containerDiv)
                         handle.focus()
                         e.preventDefault()
+                        checkChange()
                     }
 
                     if (!e.ctrlKey && e.code === 'ArrowDown') {
@@ -216,8 +235,9 @@ class PostList {
                 const newName = nameInput.innerText.trim()
 
                 if (oldInnerText !== newName) {
-                    console.log(newName)
+                    console.log(`set post name from ${post.name} to ${newName}`)
                     post.name = newName
+                    checkChange()
                 }
                 oldInnerText = newName
                 nameInput.innerText = newName
@@ -310,6 +330,7 @@ class PostList {
 
                     post.date = date.toISOString()
                     console.log(`set post date to ${date.toISOString()}`)
+                    checkChange()
                 }
 
                 setDateInputValueToPostDate()
@@ -318,6 +339,7 @@ class PostList {
             })
         }
 
+        // setup postStatusDisplay
         {
             switch (entry.postStatus) {
                 case PostStatus.Normal: {
@@ -343,7 +365,65 @@ class PostList {
         }
     }
 
+    userModifiedPost(): boolean {
+        const postEntryPosts: Map<string, Post> = new Map()
+
+        for (let i = 0; i < this.listDiv.children.length; i++) {
+            const div = this.listDiv.children[i]
+
+            const uuid = div.getAttribute('post-uuid')
+            if (uuid === null) {
+                continue
+            }
+
+            const listEntry = this.listEntries.get(uuid)
+            if (listEntry === undefined) {
+                continue
+            }
+
+            postEntryPosts.set(listEntry.post.uuid, listEntry.post)
+        }
+
+        if (postEntryPosts.size !== this.savedAllPosts.size) {
+            throw new Error('post entry size and known post size is different!')
+        }
+
+        // compare post order
+        {
+            const postsA = postEntryPosts.values()
+            const postsB = this.savedAllPosts.values()
+
+            while (true) {
+                const a = postsA.next()
+                const b = postsB.next()
+
+                if (a.done || b.done) {
+                    break
+                }
+
+                if (a.value.uuid !== b.value.uuid) {
+                    return true
+                }
+            }
+        }
+
+        for (const post of this.savedAllPosts.values()) {
+            if (post.hasChanged(postEntryPosts.get(post.uuid)!)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
     async submit() {
+        {
+            const changeStatusText = document.getElementById('change-status-text')
+            if (changeStatusText !== null) {
+                changeStatusText.innerText = ""
+            }
+        }
+
         const containers: Array<PostContainer> = []
 
         for (let i = 0; i < this.listDiv.children.length; i++) {
@@ -403,29 +483,29 @@ class PostList {
 
         } catch (err) {
             console.error(err)
-            report('submit failed, check console for details', true)
+            report('submit failed, check console for details', ColorError)
             return
         }
 
-        while (this.listDiv.children.length > 0) {
-            this.listDiv.children[0].remove()
-        }
+        this.setPostList(posts, posts)
 
-        this.oldPosts.clear()
-        this.newPosts.clear()
-
-        for (const post of posts.values()) {
-            this.oldPosts.set(post.uuid, post)
-            this.newPosts.set(post.uuid, post)
-
-            this.addEntry(post, PostStatus.Normal)
-        }
-
-        report('SUCCESS', false)
+        report('SUCCESS', ColorSuccess)
     }
 }
 
 (async () => {
+    // copy pasted from https://stackoverflow.com/questions/43043113/how-to-force-reloading-a-page-when-using-browser-back-button
+    // force window to reload if user got here with browser back or forward button
+    window.addEventListener("pageshow", function(event) {
+        var historyTraversal = event.persisted ||
+            (typeof window.performance != "undefined" &&
+                window.performance.navigation.type === 2);
+        if (historyTraversal) {
+            // Handle page restore.
+            window.location.reload();
+        }
+    });
+
     const postList = new PostList()
 
     const makeRequest = async (): Promise<any> => {
@@ -457,7 +537,7 @@ class PostList {
         newPosts = parsePostListJsonOrThrow(json.New)
     } catch (err) {
         console.error(err)
-        report('GET request failed, check console for details', true)
+        report('GET request failed, check console for details', ColorError)
         return
     }
 
