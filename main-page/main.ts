@@ -32,7 +32,7 @@ let changeColumnCount = function(count: number) {
 
     for (let i = 0; i < ColumnCount; i++) {
         let column = document.createElement('div');
-        column.className = 'post_column';
+        column.className = 'post-column';
 
         ColumnContainer.appendChild(column);
         Columns.push(column);
@@ -49,10 +49,38 @@ let changeColumnCount = function(count: number) {
 
 window.onresize = onResize;
 
-function generatePostBoxFromPost(post: Post) {
+function generateExternalLinksPost(): HTMLElement {
+    const f = new BomFactory()
+
+    const html = f.create('div').classes('post-box').add(
+        f.create('div').classes('external-link').add(
+            f.create('img').classes('external-link-icon')
+                .set('src', 'main-page/icon-github.svg')
+                .set('alt', 'github icon'),
+            f.create('a').set('href', 'https://github.com/imprity').text('github'),
+
+        ),
+        f.create('div').classes('external-link').add(
+            f.create('img').classes('external-link-icon')
+                .set('src', 'main-page/icon-itchio.svg')
+                .set('alt', 'itch.io icon'),
+            f.create('a').set('href', 'https://imprity.itch.io/').text('itch.io'),
+        ),
+        f.create('div').classes('external-link').add(
+            f.create('img').classes('external-link-icon')
+                .set('src', 'main-page/icon-email.svg')
+                .set('alt', 'email icon'),
+            f.create('p').text('imprity041@gmail.com')
+        ),
+    )
+
+    return html.html
+}
+
+function generatePostBoxFromPost(post: Post): HTMLElement {
     let childDiv = document.createElement('div');
 
-    childDiv.className = 'post_box';
+    childDiv.className = 'post-box';
 
     let href = "/public/" + post.dir + "/"
 
@@ -65,27 +93,32 @@ function generatePostBoxFromPost(post: Post) {
         let thumbnail = document.createElement('img');
         thumbnail.src = "/public/" + post.dir + "/" + post.thumbnail
         thumbnail.onclick = onclick;
-        thumbnail.className = 'post_thumbnail'
+        thumbnail.className = 'post-thumbnail'
 
         childDiv.append(thumbnail);
     }
 
-    let title = document.createElement('p');
-    title.classList = 'post_title';
-    let titleLink = document.createElement('a');
-    titleLink.innerText = post.name;
-    titleLink.href = href;
-    titleLink.className = 'post_title';
-
-    title.appendChild(titleLink);
+    let title = document.createElement('a');
+    title.classList = 'post-title';
+    title.innerText = post.name;
+    title.href = href;
+    title.className = 'post-title';
 
     childDiv.append(title);
+
+    let date = document.createElement('p')
+    date.classList.add('post-date')
+    date.innerText = new Date(post.date).toDateString()
+
+    childDiv.appendChild(date)
 
     return childDiv;
 }
 
 
 (async () => {
+    PostElements.push(generateExternalLinksPost())
+
     try {
         let res = await fetch('/post-list.json');
         let json = await res.json();
@@ -104,7 +137,7 @@ function generatePostBoxFromPost(post: Post) {
         console.error(err);
 
         let errorDiv = mustGetElementById('error-message');
-        errorDiv.style.visibility = 'visible';
+        errorDiv.style.display = 'block';
         errorDiv.innerText = 'Failed to get posts'
     }
 
