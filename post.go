@@ -549,5 +549,26 @@ func ConvertMarkdown(markdownBytes []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return byteBuf.Bytes(), nil
+	page := fmt.Sprintf(markdownTemplate, string(byteBuf.Bytes()))
+
+	return []byte(page), nil
 }
+
+const markdownTemplate = `
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="/shared/water.css">
+    <link rel="stylesheet" href="/shared/markdown-style.css">
+</head>
+
+<body>
+%s
+</body>
+
+</html>
+`
