@@ -563,11 +563,13 @@ const markdownTemplate = `
     <meta charset="UTF-8">
 
     <link rel="stylesheet" href="/shared/water.css">
-    <link rel="stylesheet" href="/shared/markdown-style.css">
+    <link rel="stylesheet" href="/markdown/style.css">
 </head>
 
 <body>
 %s
+
+	<script src = '/markdown/main.js'></script>
 </body>
 
 </html>

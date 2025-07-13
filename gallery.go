@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"text/template"
 
 	"github.com/yuin/goldmark"
 	gast "github.com/yuin/goldmark/ast"
@@ -160,6 +161,35 @@ func (r *GalleryHTMLRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegiste
 // DefinitionListAttributeFilter defines attribute names which dl elements can have.
 // var DefinitionListAttributeFilter = html.GlobalAttributeFilter
 
+const galleryTemplateText = `
+<div class="gallery-div">
+	<div class="gallery-img-container">
+		{{- range .Images}}
+		<img class="gallery-img" src="{{castStr .ImageSource | urlquery}}" alt="{{castStr .AltText| html}}">
+		{{- end}}
+	</div>
+
+	<button class="gallery-button-left">left</button>
+	<button class="gallery-button-right">right</button>
+</div>
+`
+
+var galleryTemplate *template.Template
+
+func init() {
+	castStr := func(b []byte) string {
+		return string(b)
+	}
+
+	galleryTemplate = template.Must(
+		template.New("galleryTemplate").
+			Funcs(map[string]any{
+				"castStr": castStr,
+			}).
+			Parse(galleryTemplateText),
+	)
+}
+
 func (r *GalleryHTMLRenderer) renderGallery(
 	w util.BufWriter,
 	source []byte,
@@ -167,16 +197,25 @@ func (r *GalleryHTMLRenderer) renderGallery(
 	entering bool,
 ) (gast.WalkStatus, error) {
 	if entering {
-		_, _ = w.WriteString("<gallery-open>\n")
+		// _, _ = w.WriteString("<gallery-open>\n")
+		//
+		// if gallery, isGallery := n.(*Gallery); isGallery {
+		// 	for _, img := range gallery.Images {
+		// 		w.WriteString(fmt.Sprintf("![%s](%s)\n", img.AltText, img.ImageSource))
+		// 	}
+		// }
 
 		if gallery, isGallery := n.(*Gallery); isGallery {
-			for _, img := range gallery.Images {
-				w.WriteString(fmt.Sprintf("![%s](%s)\n", img.AltText, img.ImageSource))
+			err := galleryTemplate.Execute(
+				w, gallery,
+			)
+
+			if err != nil {
+				return gast.WalkStop, err
 			}
 		}
-	} else {
-		_, _ = w.WriteString("<gallery-close>\n")
 	}
+
 	return gast.WalkContinue, nil
 }
 

@@ -1,7 +1,0 @@
-img {
-    max-width : calc(min(90vw, 1000px));
-    max-height : calc(min(60vh, 500px));
-    margin : auto;
-    display : block;
-    border-radius : 6px;
-}

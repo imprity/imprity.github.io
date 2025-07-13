@@ -1,0 +1,269 @@
+class Gallery {
+    static GalleryMargin: number = 10 // constant
+
+    images: Array<HTMLImageElement> = []
+
+    selectedImg: number = 0
+
+    galleryDiv: HTMLElement
+    galleryContainer: HTMLElement
+
+    isDragging: boolean = false;
+    touchID: number = 0
+    touchPrevX: number = 0
+    touchOffset: number = 0;
+
+    animation: Animation | null = null
+
+    constructor(galleryDiv: HTMLElement) {
+        const mustSelect = (toSelect: string): HTMLElement => {
+            const toReturn = galleryDiv.querySelector(toSelect)
+            if (toReturn === null) {
+                throw new Error(`failed to get ${toSelect}`)
+            }
+            return toReturn as HTMLElement
+        }
+
+        const mustSelectAll = (toSelect: string): NodeList => {
+            return galleryDiv.querySelectorAll(toSelect)
+        }
+
+        const galleryContainer = mustSelect('.gallery-img-container')
+        const galleryImages = mustSelectAll('.gallery-img')
+
+        this.galleryDiv = galleryDiv
+        this.galleryContainer = galleryContainer as HTMLElement
+        for (let i = 0; i < galleryImages.length; i++) {
+            const img = galleryImages[i]
+            this.images.push(img as HTMLImageElement)
+        }
+
+        const leftButton = mustSelect('.gallery-button-left')
+        const rightButton = mustSelect('.gallery-button-right')
+
+        leftButton.onclick = () => {
+            this.showPrev(false)
+        }
+
+        rightButton.onclick = () => {
+            this.showNext(false)
+        }
+
+        window.addEventListener('resize', () => {
+            this.onResize()
+        })
+
+        this.galleryDiv.addEventListener('touchstart', (e) => {
+            if (this.isDragging) {
+                return
+            }
+
+            if (!(e.target instanceof Element)) {
+                return
+            }
+
+            if (
+                !e.target?.classList.contains('gallery-button-left') &&
+                !e.target?.classList.contains('gallery-button-right')
+            ) {
+                if (e.touches.length === 1) {
+                    this.skipAnimation()
+
+                    this.isDragging = true
+                    this.touchOffset = 0
+                    this.touchID = e.touches[0].identifier
+                    this.touchPrevX = e.touches[0].clientX
+                }
+            }
+        })
+
+        this.galleryDiv.addEventListener('touchmove', (e) => {
+            if (!this.isDragging) {
+                return
+            }
+
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i]
+                if (touch.identifier === this.touchID) {
+                    this.touchOffset += touch.clientX - this.touchPrevX
+                    this.touchPrevX = touch.clientX
+
+                    this.galleryContainer.style.transform = `translateX(${this.touchOffset}px)`
+
+                    return
+                }
+            }
+        })
+
+        const onTouchEnd = (e: TouchEvent) => {
+            if (!this.isDragging) {
+                return
+            }
+
+            let foundTouch = false
+
+            for (let i = 0; i < e.touches.length; i++) {
+                const touch = e.touches[i]
+                if (touch.identifier === this.touchID) {
+                    foundTouch = true
+                    break
+                }
+            }
+
+            if (!foundTouch) {
+                console.log('touch ended')
+
+                const galleryRect = this.galleryDiv.getBoundingClientRect()
+
+                if (Math.abs(this.touchOffset) > galleryRect.width * 0.2) {
+                    if (this.touchOffset < 0) {
+                        this.showNext(true)
+                    } else {
+                        this.showPrev(true)
+                    }
+                }
+
+                this.galleryContainer.style.transform = `translateX(0px)`
+
+                this.isDragging = false
+                this.touchOffset = 0
+            }
+        }
+
+        this.galleryDiv.addEventListener('touchend', (e) => {
+            onTouchEnd(e)
+        })
+
+        this.galleryDiv.addEventListener('touchcancel', (e) => {
+            onTouchEnd(e)
+        })
+
+        const waitImageLoading = (img: HTMLImageElement): Promise<void> => {
+            //TODO : handle error
+            return new Promise((res, rej) => {
+                if (img.complete) {
+                    res()
+                } else {
+                    img.addEventListener('load', () => {
+                        console.log('loaded')
+                        res()
+                    })
+                }
+            })
+        }
+
+        const waitAndResize = async () => {
+            const promises = []
+
+            for (const img of this.images) {
+                promises.push(waitImageLoading(img))
+            }
+
+            await Promise.all(promises)
+
+            this.onResize()
+        }
+
+        waitAndResize()
+    }
+
+    skipAnimation() {
+        if (this.animation !== null) {
+            this.animation.finish()
+            this.animation.commitStyles()
+            this.animation.cancel()
+        }
+        this.animation = null
+    }
+
+    onResize() {
+        const galleryRect = this.galleryDiv.getBoundingClientRect()
+
+        for (const img of this.images) {
+            const scaleX = galleryRect.width / img.naturalWidth
+            const scaleY = galleryRect.height / img.naturalHeight
+
+            const scale = Math.min(scaleX, scaleY)
+
+            let w = img.naturalWidth * scale
+            let h = img.naturalHeight * scale
+
+            w -= Gallery.GalleryMargin;
+            h -= Gallery.GalleryMargin;
+
+            w = Math.max(w, 0)
+            h = Math.max(h, 0)
+
+            img.style.width = `${w}px`
+            img.style.minWidth = `${w}px`
+            img.style.maxWidth = `${w}px`
+
+            img.style.height = `${h}px`
+            img.style.minHeight = `${h}px`
+            img.style.maxHeight = `${h}px`
+        }
+
+        this.selectImage(this.selectedImg, true)
+    }
+
+    selectImage(index: number, noAnimation: boolean) {
+        if (this.images.length <= 0) {
+            return
+        }
+
+        this.skipAnimation()
+
+        index = Math.min(index, this.images.length - 1)
+        index = Math.max(index, 0)
+
+        this.selectedImg = index
+
+        const img = this.images[this.selectedImg]
+
+        const imgRect = img.getBoundingClientRect()
+        const galleryRect = this.galleryDiv.getBoundingClientRect()
+
+        const galleryCenterX = galleryRect.x + galleryRect.width * 0.5
+        const imgCenterX = imgRect.x + imgRect.width * 0.5
+
+        const containerRect = this.galleryContainer.getBoundingClientRect()
+
+        const newX = containerRect.x + (galleryCenterX - imgCenterX) - galleryRect.x
+
+        if (noAnimation) {
+            console.log('fuck')
+            this.galleryContainer.style.left = `${newX}px`
+        } else {
+            this.animation = this.galleryContainer.animate(
+                [
+                    {
+                        left: `${containerRect.x - galleryRect.x}px`
+                    },
+                    {
+                        left: `${newX}px`
+                    },
+                ],
+                {
+                    fill: "forwards",
+                    duration: 60,
+                    easing: "ease-out"
+                }
+            )
+        }
+    }
+
+    showNext(noAnimation: boolean) {
+        this.selectImage(this.selectedImg + 1, noAnimation)
+    }
+
+    showPrev(noAnimation: boolean) {
+        this.selectImage(this.selectedImg - 1, noAnimation)
+    }
+}
+
+const galleryDivs = document.getElementsByClassName('gallery-div')
+
+for (let i = 0; i < galleryDivs.length; i++) {
+    const div = galleryDivs[i]
+    new Gallery(div as HTMLElement)
+}

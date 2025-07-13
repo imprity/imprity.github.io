@@ -11,3 +11,8 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 call npm run tsc -- -p main-page-tsconfig.json
+if %ERRORLEVEL% NEQ 0 (
+	GOTO :EOF
+)
+
+call npm run tsc -- -p markdown-tsconfig.json

@@ -60,6 +60,15 @@ character in a paragraph into a `<br />` tag.
 When you *do* want to insert a `<br />` break tag using Markdown, you
 end a line with two or more spaces, then type return.
 
+<gallery>
+![img1](img1.jpg)
+![img2](img2.png)
+![img3](img3.jpg)
+![img4](img4.jpg)
+![img5](img5.jpg)
+![img6](img6.jpg)
+</gallery>
+
 ### Headers
 
 Markdown supports two styles of headers, [Setext] [1] and [atx] [2].
