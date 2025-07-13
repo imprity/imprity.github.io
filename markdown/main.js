@@ -404,10 +404,26 @@ class Gallery {
         const leftButton = mustSelect('.gallery-button-left');
         const rightButton = mustSelect('.gallery-button-right');
         leftButton.onclick = () => {
-            this.showPrev(false);
+            if (this.images.length <= 0) {
+                return;
+            }
+            if (this.selectedImg <= 0) {
+                this.animateStuck(true);
+            }
+            else {
+                this.showPrev(false);
+            }
         };
         rightButton.onclick = () => {
-            this.showNext(false);
+            if (this.images.length <= 0) {
+                return;
+            }
+            if (this.selectedImg === this.images.length - 1) {
+                this.animateStuck(false);
+            }
+            else {
+                this.showNext(false);
+            }
         };
         window.addEventListener('resize', () => {
             this.onResize();
@@ -459,8 +475,7 @@ class Gallery {
             }
             if (!foundTouch) {
                 console.log('touch ended');
-                const galleryRect = this.galleryDiv.getBoundingClientRect();
-                if (Math.abs(this.touchOffset) > galleryRect.width * 0.2) {
+                if (Math.abs(this.touchOffset) > 50) {
                     if (this.touchOffset < 0) {
                         this.showNext(true);
                     }
@@ -548,7 +563,6 @@ class Gallery {
         const containerRect = this.galleryContainer.getBoundingClientRect();
         const newX = containerRect.x + (galleryCenterX - imgCenterX) - galleryRect.x;
         if (noAnimation) {
-            console.log('fuck');
             this.galleryContainer.style.left = `${newX}px`;
         }
         else {
@@ -571,6 +585,27 @@ class Gallery {
     }
     showPrev(noAnimation) {
         this.selectImage(this.selectedImg - 1, noAnimation);
+    }
+    animateStuck(left) {
+        this.skipAnimation();
+        const keyframes = [];
+        const galleryRect = this.galleryDiv.getBoundingClientRect();
+        const containerRect = this.galleryContainer.getBoundingClientRect();
+        const currentX = containerRect.x - galleryRect.x;
+        const amount = 5;
+        keyframes.push({ left: `${currentX}px` });
+        if (left) {
+            keyframes.push({ left: `${currentX + amount}px` });
+        }
+        else {
+            keyframes.push({ left: `${currentX - amount}px` });
+        }
+        keyframes.push({ left: `${currentX}px` });
+        this.animation = this.galleryContainer.animate(keyframes, {
+            fill: "forwards",
+            duration: 200,
+            easing: "ease-out"
+        });
     }
 }
 Gallery.GalleryMargin = 10; // constant

@@ -169,8 +169,8 @@ const galleryTemplateText = `
 		{{- end}}
 	</div>
 
-	<button class="gallery-button-left">left</button>
-	<button class="gallery-button-right">right</button>
+	<button class="gallery-button gallery-button-left"></button>
+	<button class="gallery-button gallery-button-right"></button>
 </div>
 `
 

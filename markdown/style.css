@@ -1,42 +1,106 @@
 img {
-    max-width : calc(min(90vw, 1000px));
-    max-height : calc(min(60vh, 500px));
-    margin : auto;
     display : block;
+
+    max-width : calc(min(90vw, 1000px));
+    max-height : calc(min(50vh, 500px));
+
+    margin : auto;
+
     border-radius : 6px;
 }
 
 .gallery-div {
+    width : 100%;
+    height: calc(min(50vh, 500px));
+
     overflow-x: hidden;
-    width: calc(min(600px, 80vw));
-    height: 300px;
+
     position: relative;
+
     margin : auto;
-    background-color : orange;
 }
 
 .gallery-img-container {
     display: flex;
+
     align-items: center;
     flex-direction: row;
     flex-wrap: nowrap;
+
     position: absolute;
+
     height : 100%;
+
     gap : 20px;
 }
 
 
-.gallery-button-right,
-.gallery-button-left {
+.gallery-button {
+    --button-size : 50px;
+    --button-arrow-offset : 5px;
+
     position : absolute;
+
+    width : var(--button-size);
+    height : var(--button-size);
+
     top : 50%;
+
+    padding : 0px;
+    margin : 0px;
+
     transform : translateY(-50%);
+
+    background-color : rgba(255,255,255,0.8);
+    border-radius : calc(var(--button-size) * 0.5);
+
     transition : none;
+
+    -webkit-tap-highlight-color: transparent;
 }
 
-.gallery-button-right:active,
-.gallery-button-left:active {
+.gallery-button:focus,
+.gallery-button:active,
+.gallery-button:hover {
+    background-color : rgba(255,255,255,1);
+    box-shadow: 0px 0px 6px 3px rgba(0,0,0,0.2);
+}
+
+.gallery-button:active {
     transform : translateY(-50%);
+}
+
+.gallery-button:focus-visible {
+    outline : 3px solid #000000;
+}
+
+.gallery-button::before {
+    content : "";
+
+    width : var(--button-size);
+    height : var(--button-size);
+
+    left : 0px;
+    top : 0px;
+
+    position : absolute;
+
+    transform-origin : center;
+
+    transform : scale(0.4);
+
+    background-image: url('/markdown/gallery-arrow.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.gallery-button-left::before{
+    transform : scale(0.4) scaleX(-1) translateX(var(--button-arrow-offset));
+}
+
+.gallery-button-right::before{
+    transform : scale(0.4) translateX(var(--button-arrow-offset));
 }
 
 .gallery-button-left {
