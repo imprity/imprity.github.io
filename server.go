@@ -10,8 +10,14 @@ import (
 )
 
 func StartServer() error {
-	fileServer := http.FileServer(http.Dir("./"))
-	http.Handle("/", LogReqest(NoCache(fileServer)))
+	http.Handle("/", LogReqest(NoCache(http.FileServer(http.Dir("./out")))))
+	http.Handle("/admin/",
+		LogReqest(
+			NoCache(
+				http.StripPrefix("/admin/", http.FileServer(http.Dir("./admin"))),
+			),
+		),
+	)
 	http.Handle("/api/", LogReqest(&AdminAPIHandler{}))
 
 	if FlagTest {
@@ -79,9 +85,9 @@ func NoCache(h http.Handler) http.Handler {
 type AdminAPIHandler struct{}
 
 var (
-	PostListPath = "post-list.json"
+	PostListPath = "out/public/post-list.json"
 	PostsPath    = "posts"
-	PostsOutPath = "public"
+	PostsOutPath = "out/posts"
 )
 
 func (aa *AdminAPIHandler) ServeHTTP(

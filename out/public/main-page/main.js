@@ -416,25 +416,25 @@ window.onresize = onResize;
 function generateExternalLinksPost() {
     const f = new BomFactory();
     const html = f.create('div').classes('post-box').add(f.create('div').classes('external-link').add(f.create('img').classes('external-link-icon')
-        .set('src', 'main-page/icon-github.svg')
+        .set('src', 'public/main-page/icon-github.svg')
         .set('alt', 'github icon'), f.create('a').set('href', 'https://github.com/imprity').text('github')), f.create('div').classes('external-link').add(f.create('img').classes('external-link-icon')
-        .set('src', 'main-page/icon-itchio.svg')
+        .set('src', 'public/main-page/icon-itchio.svg')
         .set('alt', 'itch.io icon'), f.create('a').set('href', 'https://imprity.itch.io/').text('itch.io')), f.create('div').classes('external-link').add(f.create('img').classes('external-link-icon')
-        .set('src', 'main-page/icon-email.svg')
+        .set('src', 'public/main-page/icon-email.svg')
         .set('alt', 'email icon'), f.create('p').text('imprity041@gmail.com')));
     return html.html;
 }
 function generatePostBoxFromPost(post) {
     let childDiv = document.createElement('div');
     childDiv.className = 'post-box';
-    let href = "/public/" + post.dir + "/";
+    let href = "/posts/" + post.dir + "/";
     let onclick = () => {
         window.location.pathname = href;
     };
     if (post.hasThumbnail) {
         console.log(`creating thumbnail for ${post.name}`);
         let thumbnail = document.createElement('img');
-        thumbnail.src = "/public/" + post.dir + "/" + post.thumbnail;
+        thumbnail.src = "/posts/" + post.dir + "/" + post.thumbnail;
         thumbnail.onclick = onclick;
         thumbnail.className = 'post-thumbnail';
         childDiv.append(thumbnail);
@@ -454,7 +454,7 @@ function generatePostBoxFromPost(post) {
 (() => __awaiter(void 0, void 0, void 0, function* () {
     PostElements.push(generateExternalLinksPost());
     try {
-        let res = yield fetch('/post-list.json');
+        let res = yield fetch('public/post-list.json');
         let json = yield res.json();
         const posts = parsePostListJsonOrThrow(json);
         for (const post of posts.values()) {
