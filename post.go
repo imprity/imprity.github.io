@@ -125,6 +125,12 @@ func (pl *PostList) Clone() PostList {
 func SavePostList(postList PostList, name string) error {
 	name = filepath.Clean(name)
 
+	dir := filepath.Dir(name)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
+
 	jsonBytes, err := json.MarshalIndent(postList, "", "  ")
 	if err != nil {
 		return err
@@ -562,14 +568,14 @@ const markdownTemplate = `
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
 
-    <link rel="stylesheet" href="/shared/water.css">
-    <link rel="stylesheet" href="/markdown/style.css">
+    <link rel="stylesheet" href="/public/shared/water.css">
+    <link rel="stylesheet" href="/public/markdown/style.css">
 </head>
 
 <body>
 %s
 
-	<script src = '/markdown/main.js'></script>
+	<script src = '/public/markdown/main.js'></script>
 </body>
 
 </html>

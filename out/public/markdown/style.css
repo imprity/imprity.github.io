@@ -92,7 +92,7 @@ img {
 
     transform: scale(0.4);
 
-    background-image: url('/markdown/gallery-arrow.svg');
+    background-image: url('/public/markdown/gallery-arrow.svg');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center center;

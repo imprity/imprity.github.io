@@ -21,9 +21,9 @@ func StartServer() error {
 	http.Handle("/api/", LogReqest(&AdminAPIHandler{}))
 
 	if FlagTest {
-		testSever := LogReqest(NoCache(http.FileServer(http.Dir("./test"))))
-		http.Handle("/post-list.json", testSever)
-		http.Handle("/public/", testSever)
+		testSever := LogReqest(NoCache(http.FileServer(http.Dir("./test/out"))))
+		http.Handle("/public/post-list.json", testSever)
+		http.Handle("/posts/", testSever)
 	}
 
 	err := http.ListenAndServe(":6969", nil)
