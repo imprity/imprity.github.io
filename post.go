@@ -405,7 +405,12 @@ func GenerateUpdatedPostList(postRoot string, oldPosts PostList) (PostList, erro
 }
 
 func CompileBlog(postRoot string, postList PostList, outDir string) error {
-	tmpOutDir, err := os.MkdirTemp("./", "out_tmp")
+	outDirParent := filepath.Dir(outDir)
+	if outDirParent == "." {
+		return fmt.Errorf("outDir can't be a root")
+	}
+
+	tmpOutDir, err := os.MkdirTemp(outDirParent, "out_tmp")
 	if err != nil {
 		return err
 	}
@@ -534,7 +539,10 @@ func CompileBlog(postRoot string, postList PostList, outDir string) error {
 		return err
 	}
 
-	os.Rename(tmpOutDir, outDir)
+	err = os.Rename(tmpOutDir, outDir)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

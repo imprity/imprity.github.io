@@ -29,9 +29,9 @@ func main() {
 	// set up test
 	// =======================
 	if FlagTest {
-		PostListPath = "test/out/public/post-list.json"
+		PostListPath = "test/docs/public/post-list.json"
 		PostsPath = "test/posts-copy"
-		PostsOutPath = "test/out/posts"
+		PostsOutPath = "test/docs/posts"
 
 		err := os.Mkdir("test", 0755)
 		if err != nil && !errors.Is(err, os.ErrExist) {

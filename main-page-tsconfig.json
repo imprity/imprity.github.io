@@ -1,7 +1,7 @@
 {
     "include" : [
         "./*",
-        "./out/public/main-page/**/*"
+        "./docs/public/main-page/**/*"
     ],
     "compilerOptions": {
         "lib": ["es2015", "DOM"],
@@ -9,6 +9,6 @@
         "strict" : true,
         "pretty" : false,
         "noUnusedLocals" : true,
-        "outFile" : "./out/public/main-page/main.js"
+        "outFile" : "./docs/public/main-page/main.js"
     }
 }

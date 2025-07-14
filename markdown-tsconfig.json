@@ -1,7 +1,7 @@
 {
     "include" : [
         "./*",
-        "./out/public/markdown/**/*"
+        "./docs/public/markdown/**/*"
     ],
     "compilerOptions": {
         "lib": ["es2015", "DOM"],
@@ -9,6 +9,6 @@
         "strict" : true,
         "pretty" : false,
         "noUnusedLocals" : true,
-        "outFile" : "./out/public/markdown/main.js"
+        "outFile" : "./docs/public/markdown/main.js"
     }
 }

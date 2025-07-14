@@ -10,7 +10,7 @@ import (
 )
 
 func StartServer() error {
-	http.Handle("/", LogReqest(NoCache(http.FileServer(http.Dir("./out")))))
+	http.Handle("/", LogReqest(NoCache(http.FileServer(http.Dir("./docs")))))
 	http.Handle("/admin/",
 		LogReqest(
 			NoCache(
@@ -21,7 +21,7 @@ func StartServer() error {
 	http.Handle("/api/", LogReqest(&AdminAPIHandler{}))
 
 	if FlagTest {
-		testSever := LogReqest(NoCache(http.FileServer(http.Dir("./test/out"))))
+		testSever := LogReqest(NoCache(http.FileServer(http.Dir("./test/docs"))))
 		http.Handle("/public/post-list.json", testSever)
 		http.Handle("/posts/", testSever)
 	}
@@ -85,9 +85,9 @@ func NoCache(h http.Handler) http.Handler {
 type AdminAPIHandler struct{}
 
 var (
-	PostListPath = "out/public/post-list.json"
+	PostListPath = "docs/public/post-list.json"
 	PostsPath    = "posts"
-	PostsOutPath = "out/posts"
+	PostsOutPath = "docs/posts"
 )
 
 func (aa *AdminAPIHandler) ServeHTTP(
