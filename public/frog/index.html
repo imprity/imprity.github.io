@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐸💕🦋</title>
+  <style>
+    :root {
+      --logo-background: #E8FFD1;
+      --logo-foreground: #3A5F2A;
+      --logo-text: #3A5F2A;
+      --error-background : #D93434;
+      --error-foreground : white;
+      --error-text : white;
+    }
+
+    .loading-text {
+      color: var(--logo-text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-weight: 400;
+    }
+
+    .error-text{
+      color: var(--error-text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-weight: 400;
+    }
+
+    .fullscreen {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      margin: 0px;
+      border: 0px;
+    }
+
+    .no-border-margin {
+      margin: 0px;
+      border: 0px;
+    }
+
+    .ui {
+      block-size: fit-content;
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      max-width: 50%;
+    }
+
+    .center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+  <script type="module" crossorigin src="./assets/index-fc04c6da.js"></script>
+</head>
+
+<body style="margin: 0px;">
+  <div class="fullscreen" id="main-div">
+    <div class="ui" id="ui-div"></div>
+  </div>
+  <div class="fullscreen" id="loading-div" style="pointer-events: none; background-color: var(--logo-background);">
+    <div class="center no-border-margin" style="text-align: center; width: 100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill-rule="evenodd"
+        style="width : 150px; height : 150px;" viewBox="0 0 300 300">
+        <g fill="var(--logo-foreground)">
+          <g>
+            <path
+              d="M165.157,116.953c-2.22,-32.966 10.74,-52.634 29.288,-52.603c22.126,0.036 40.534,24.936 32.934,69.065c-0.996,5.784 -2.521,10.744 -4.302,14.969c6.363,8.748 9.977,18.764 9.977,29.403c-0,34.143 -37.216,61.863 -83.054,61.863c-45.838,0 -83.054,-27.72 -83.054,-61.863c0,-10.639 3.614,-20.655 9.977,-29.403c-1.781,-4.225 -3.306,-9.185 -4.302,-14.969c-7.6,-44.129 10.808,-69.029 32.934,-69.065c18.548,-0.031 31.508,19.637 29.288,52.603c4.917,-0.676 9.982,-1.03 15.157,-1.03c5.175,0 10.24,0.354 15.157,1.03Zm35.027,33.783c12.812,-0.681 22.257,-19.254 21.079,-41.45c-1.179,-22.197 -12.538,-37.136 -25.351,-36.456c-12.812,0.681 -22.763,14.197 -22.427,38.247c0.311,22.226 13.887,40.339 26.699,39.659Zm-100.368,-0c-12.812,-0.681 -22.257,-19.254 -21.079,-41.45c1.179,-22.197 12.538,-37.136 25.351,-36.456c12.812,0.681 22.763,14.197 22.427,38.247c-0.311,22.226 -13.887,40.339 -26.699,39.659Z" />
+            <g>
+              <ellipse cx="103.641" cy="109.705" rx="18.684" ry="26.589" />
+              <ellipse cx="196.359" cy="109.705" rx="18.684" ry="26.589" />
+            </g>
+          </g>
+          <circle id="loading-circle" cx="150" cy="150" r="142" fill="none" stroke="var(--logo-foreground)"
+            stroke-width="16" transform="rotate(-90) translate(-300, 0)" stroke-dasharray="0 10000000"
+            stroke-linecap="round" />
+        </g>
+      </svg>
+      <p class="loading-text" id="loading-percentage">0%</p>
+      <p class="loading-text" id="loading-text">loading</p>
+    </div>
+  </div>
+  <div class="fullscreen" id="error-div" style="background-color: var(--error-background); visibility: hidden;">
+    <div class="center no-border-margin" style="text-align: center; width: 100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill-rule="evenodd"
+        style="width : 150px; height : 150px;" viewBox="0 0 300 300">
+        <g fill="var(--error-foreground)">
+          <g>
+            <path
+              d="M165.157,116.953c-2.22,-32.966 10.74,-52.634 29.288,-52.603c22.126,0.036 40.534,24.936 32.934,69.065c-0.996,5.784 -2.521,10.744 -4.302,14.969c6.363,8.748 9.977,18.764 9.977,29.403c-0,34.143 -37.216,61.863 -83.054,61.863c-45.838,0 -83.054,-27.72 -83.054,-61.863c0,-10.639 3.614,-20.655 9.977,-29.403c-1.781,-4.225 -3.306,-9.185 -4.302,-14.969c-7.6,-44.129 10.808,-69.029 32.934,-69.065c18.548,-0.031 31.508,19.637 29.288,52.603c4.917,-0.676 9.982,-1.03 15.157,-1.03c5.175,0 10.24,0.354 15.157,1.03Zm5.56,94.231l-41.434,0c0,-11.434 9.283,-20.716 20.717,-20.716c11.434,-0 20.717,9.282 20.717,20.716Zm29.467,-60.448c12.812,-0.681 22.257,-19.254 21.079,-41.45c-1.179,-22.197 -12.538,-37.136 -25.351,-36.456c-12.812,0.681 -22.763,14.197 -22.427,38.247c0.311,22.226 13.887,40.339 26.699,39.659Zm-100.368,-0c-12.812,-0.681 -22.257,-19.254 -21.079,-41.45c1.179,-22.197 12.538,-37.136 25.351,-36.456c12.812,0.681 22.763,14.197 22.427,38.247c-0.311,22.226 -13.887,40.339 -26.699,39.659Z" />
+          </g>
+          <path
+            d="M150,0c82.787,0 150,67.213 150,150c-0,82.787 -67.213,150 -150,150c-82.787,-0 -150,-67.213 -150,-150c0,-82.787 67.213,-150 150,-150Zm-0,16.667c73.589,-0 133.333,59.744 133.333,133.333c0,73.589 -59.744,133.333 -133.333,133.333c-73.589,0 -133.333,-59.744 -133.333,-133.333c-0,-73.589 59.744,-133.333 133.333,-133.333Z" />
+          <g>
+            <g>
+              <path d="M107.1,83.135l10.234,4.028l-20.092,51.041l-10.233,-4.028l20.091,-51.041Z" />
+              <path d="M98.645,82.92l-10.425,3.505l17.478,51.994l10.424,-3.504l-17.477,-51.995Z" />
+            </g>
+            <g>
+              <path d="M192.9,83.135l-10.234,4.028l20.092,51.041l10.233,-4.028l-20.091,-51.041Z" />
+              <path d="M201.355,82.92l10.425,3.505l-17.478,51.994l-10.424,-3.504l17.477,-51.995Z" />
+            </g>
+          </g>
+        </g>
+      </svg>
+      <p class="error-text" id="error-text">Error!</p>
+    </div>
+  </div>
+  
+</body>
+</html>

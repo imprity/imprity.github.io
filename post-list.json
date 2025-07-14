@@ -1,24 +1,34 @@
 {
   "Posts": [
     {
-      "UUID": "8a91e244-77a2-4fd5-b186-1770aa5950df",
-      "FileHash": "h1:vZIdbKqIR23VQRjM/UK1iDi3BE6ei/bPjEues2t2UDw=",
-      "Name": "fart dickinson",
+      "UUID": "42d89387-0d75-40f2-8a85-2d40cdcbc71c",
+      "FileHash": "h1:Lpe4471MJZDPbNB0p8BAfMYLC3Usj/AuHSRIZyjK1A4=",
+      "Name": "ya-wiki-graph",
       "Type": "HTML",
-      "Date": "2025-07-10T01:48:47.0083945+09:00",
-      "Dir": "post2",
-      "HasThumbnail": false,
-      "Thumbnail": ""
+      "Date": "2025-07-14T22:56:16.4080921+09:00",
+      "Dir": "ya-wiki-graph",
+      "HasThumbnail": true,
+      "Thumbnail": "post-thumbnail.png"
     },
     {
-      "UUID": "6b7a78ae-b589-4e43-af48-0446f438f086",
-      "FileHash": "h1:wswVu3K+Qhf+Kk1AZVVO3vruBxzQt0pvlu2jT8VPF2w=",
-      "Name": "gay stuff",
+      "UUID": "0659ced3-1309-4be0-842d-ae44ac508a4f",
+      "FileHash": "h1:csQ9MXRZCeLphSMWrzhL7VWIq8vEhvCA4In+NN8kYyM=",
+      "Name": "minesweeper",
       "Type": "HTML",
-      "Date": "2025-07-10T01:48:47.0083945+09:00",
-      "Dir": "post1",
-      "HasThumbnail": false,
-      "Thumbnail": ""
+      "Date": "2025-07-14T22:41:02.3477962+09:00",
+      "Dir": "minesweeper",
+      "HasThumbnail": true,
+      "Thumbnail": "post-thumbnail.png"
+    },
+    {
+      "UUID": "af1e3c46-6e32-48c7-804b-e4faa059693d",
+      "FileHash": "h1:cUQFa74+Vj+68v023RRfVxenLLm8inTLVTDHOdbLiJg=",
+      "Name": "개굴이",
+      "Type": "HTML",
+      "Date": "2025-07-14T22:30:04.9383075+09:00",
+      "Dir": "frog",
+      "HasThumbnail": true,
+      "Thumbnail": "post-thumbnail.jpg"
     }
   ]
 }

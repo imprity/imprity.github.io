@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0, initial-scale=1.0, user-scalable=no" />
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="reset.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body style="width:100dvw; height:100dvh;">
+  <div class="parent-div">
+
+    <div style="flex-grow:1; position:relative; min-width:50%; min-height:50%;">
+
+      <canvas class="full-screen-canvas" id="main-canvas"></canvas>
+      <canvas class="full-screen-canvas" style="pointer-events: none" id='overlay-canvas'></canvas>
+      <canvas class="full-screen-canvas" style="pointer-events: none" id='sim-canvas'></canvas>
+
+      <div id="main-ui-container">
+        <form id="search-form" class="shadow-focus">
+          <input id="search-bar-text" type="text" autocomplete="off"></input>
+          <button id="search-bar-button" type="submit" tabindex="-1"></button>
+        </form>
+        <div id="search-option-container">
+          <input id="search-toggle" type="checkbox" class="shadow-focus" checked></input>
+          <span class="noselect" id="search-toggle-span">search wikipedia</span>
+          <div id="language-select-container">
+            <div id="language-select-icon"></div>
+            <label id="language-select-label" for="language-select">EN</label>
+            <select id="language-select"></select>
+          </div>
+        </div>
+      </div>
+
+      <div id="error-print-box"></div>
+
+      <button id="about-page-show-button"></button>
+
+      <div class="debug-print-box" id="debug-print-box"></div>
+
+      <div id="about-page" style="display:none">
+        <h1>Wikipedia Graph</h1>
+
+        <p class="header-sub"><i>Yes, yet another one.</i></p>
+        <hr>
+
+        <h2>What is this?</h2>
+        <p>This is an app that visualizes Wikipedia pages using a <a href="https://en.wikipedia.org/wiki/Force-directed_graph_drawing">force-directed graph.</a> Each circle is a Wikipedia page.</p>
+        <p>Click on a circle to see links a page has to other pages. Hold to open the actual Wikipedia page.</p>
+
+        <h2>Source</h2>
+        <p><a href="https://github.com/imprity/ya-wiki-graph">https://github.com/imprity/ya-wiki-graph</a></p>
+
+        <h2>Credits</h2>
+        <p><a href="https://commons.wikimedia.org/wiki/File:OOjs_UI_icon_language-ltr-progressive.svg">Wikipedia language icon</a> used under MIT license.</p>
+
+        <button id="about-page-hide-button"></button>
+
+      </div>
+
+    </div>
+
+    <div id="debug-ui-container" style="margin:3px; overflow:auto;">
+    </div>
+
+  </div>
+
+  <script src="scripts/main.js" type="module"></script>
+
+</body>
+
+</html>
