@@ -162,16 +162,21 @@ func (r *GalleryHTMLRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegiste
 // var DefinitionListAttributeFilter = html.GlobalAttributeFilter
 
 const galleryTemplateText = `
-<div class="gallery-div">
-	<div class="gallery-img-container">
-		{{- range .Images}}
-		<img class="gallery-img" src="{{castStr .ImageSource | urlquery}}" alt="{{castStr .AltText| html}}">
-		{{- end}}
+<section class="gallery-section">
+	<div class="gallery-div">
+		<div class="gallery-img-container">
+			{{- range .Images}}
+			<img class="gallery-img" src="{{castStr .ImageSource | urlquery}}" alt="{{castStr .AltText| html}}">
+			{{- end}}
+		</div>
+
+		<button class="gallery-button gallery-button-left"></button>
+		<button class="gallery-button gallery-button-right"></button>
 	</div>
 
-	<button class="gallery-button gallery-button-left"></button>
-	<button class="gallery-button gallery-button-right"></button>
-</div>
+    <div class="gallery-dot-container">
+    </div>
+</section>
 `
 
 var galleryTemplate *template.Template

@@ -5,6 +5,7 @@ class Gallery {
 
     selectedImg: number = 0
 
+    gallerySection: HTMLElement
     galleryDiv: HTMLElement
     galleryContainer: HTMLElement
 
@@ -13,11 +14,18 @@ class Gallery {
     touchPrevX: number = 0
     touchOffset: number = 0;
 
+    galleryDots: Array<HTMLElement> = []
+
     animation: Animation | null = null
 
-    constructor(galleryDiv: HTMLElement) {
+    constructor(gallerySection: HTMLElement) {
+        this.gallerySection = gallerySection
+
+        // ======================
+        // get child elements
+        // ======================
         const mustSelect = (toSelect: string): HTMLElement => {
-            const toReturn = galleryDiv.querySelector(toSelect)
+            const toReturn = gallerySection.querySelector(toSelect)
             if (toReturn === null) {
                 throw new Error(`failed to get ${toSelect}`)
             }
@@ -25,13 +33,14 @@ class Gallery {
         }
 
         const mustSelectAll = (toSelect: string): NodeList => {
-            return galleryDiv.querySelectorAll(toSelect)
+            return gallerySection.querySelectorAll(toSelect)
         }
+
+        this.galleryDiv = mustSelect('.gallery-div')
 
         const galleryContainer = mustSelect('.gallery-img-container')
         const galleryImages = mustSelectAll('.gallery-img')
 
-        this.galleryDiv = galleryDiv
         this.galleryContainer = galleryContainer as HTMLElement
         for (let i = 0; i < galleryImages.length; i++) {
             const img = galleryImages[i]
@@ -41,6 +50,11 @@ class Gallery {
         const leftButton = mustSelect('.gallery-button-left')
         const rightButton = mustSelect('.gallery-button-right')
 
+        const dotContainer = mustSelect('.gallery-dot-container')
+
+        // ======================
+        // set up button logic
+        // ======================
         leftButton.onclick = () => {
             if (this.images.length <= 0) {
                 return
@@ -63,10 +77,31 @@ class Gallery {
             }
         }
 
+        // ======================
+        // set up dots
+        // ======================
+        for (let i = 0; i < this.images.length; i++) {
+            const dot = document.createElement('div')
+            dot.classList.add('gallery-dot')
+            dot.onclick = () => {
+                console.log(`clicked ${i}`)
+                this.selectImage(i, false)
+            }
+
+            dotContainer.appendChild(dot)
+            this.galleryDots.push(dot)
+        }
+
+        // ======================
+        // set up resizing
+        // ======================
         window.addEventListener('resize', () => {
             this.onResize()
         })
 
+        // ======================
+        // set up touch logic
+        // ======================
         this.galleryDiv.addEventListener('touchstart', (e) => {
             if (this.isDragging) {
                 return
@@ -150,6 +185,9 @@ class Gallery {
             onTouchEnd(e)
         })
 
+        // ===============================================
+        // wait for images to load then determine layout
+        // ===============================================
         const waitImageLoading = (img: HTMLImageElement): Promise<void> => {
             //TODO : handle error
             return new Promise((res, rej) => {
@@ -261,6 +299,14 @@ class Gallery {
                 }
             )
         }
+
+        for (const dot of this.galleryDots) {
+            dot.classList.remove('gallery-dot-selected')
+        }
+
+        if (0 <= this.selectedImg && this.selectedImg < this.galleryDots.length) {
+            this.galleryDots[this.selectedImg].classList.add('gallery-dot-selected')
+        }
     }
 
     showNext(noAnimation: boolean) {
@@ -301,9 +347,9 @@ class Gallery {
     }
 }
 
-const galleryDivs = document.getElementsByClassName('gallery-div')
+const gallerySections = document.getElementsByClassName('gallery-section')
 
-for (let i = 0; i < galleryDivs.length; i++) {
-    const div = galleryDivs[i]
-    new Gallery(div as HTMLElement)
+for (let i = 0; i < gallerySections.length; i++) {
+    const section = gallerySections[i]
+    new Gallery(section as HTMLElement)
 }

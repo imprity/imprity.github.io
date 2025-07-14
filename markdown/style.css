@@ -1,23 +1,23 @@
 img {
-    display : block;
+    display: block;
 
-    max-width : calc(min(90vw, 1000px));
-    max-height : calc(min(50vh, 500px));
+    max-width: calc(min(90vw, 1000px));
+    max-height: calc(min(50vh, 500px));
 
-    margin : auto;
+    margin: auto;
 
-    border-radius : 6px;
+    border-radius: 6px;
 }
 
 .gallery-div {
-    width : 100%;
+    width: 100%;
     height: calc(min(50vh, 500px));
 
     overflow-x: hidden;
 
     position: relative;
 
-    margin : auto;
+    margin: auto;
 }
 
 .gallery-img-container {
@@ -29,32 +29,32 @@ img {
 
     position: absolute;
 
-    height : 100%;
+    height: 100%;
 
-    gap : 20px;
+    gap: 20px;
 }
 
 
 .gallery-button {
-    --button-size : 50px;
-    --button-arrow-offset : 5px;
+    --button-size: 50px;
+    --button-arrow-offset: 5px;
 
-    position : absolute;
+    position: absolute;
 
-    width : var(--button-size);
-    height : var(--button-size);
+    width: var(--button-size);
+    height: var(--button-size);
 
-    top : 50%;
+    top: 50%;
 
-    padding : 0px;
-    margin : 0px;
+    padding: 0px;
+    margin: 0px;
 
-    transform : translateY(-50%);
+    transform: translateY(-50%);
 
-    background-color : rgba(255,255,255,0.8);
-    border-radius : calc(var(--button-size) * 0.5);
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: calc(var(--button-size) * 0.5);
 
-    transition : none;
+    transition: none;
 
     -webkit-tap-highlight-color: transparent;
 }
@@ -62,32 +62,32 @@ img {
 .gallery-button:focus,
 .gallery-button:active,
 .gallery-button:hover {
-    background-color : rgba(255,255,255,1);
-    box-shadow: 0px 0px 6px 3px rgba(0,0,0,0.2);
+    background-color: rgba(255, 255, 255, 1);
+    box-shadow: 0px 0px 6px 3px rgba(0, 0, 0, 0.2);
 }
 
 .gallery-button:active {
-    transform : translateY(-50%);
+    transform: translateY(-50%);
 }
 
 .gallery-button:focus-visible {
-    outline : 3px solid #000000;
+    outline: 3px solid #000000;
 }
 
 .gallery-button::before {
-    content : "";
+    content: "";
 
-    width : var(--button-size);
-    height : var(--button-size);
+    width: var(--button-size);
+    height: var(--button-size);
 
-    left : 0px;
-    top : 0px;
+    left: 0px;
+    top: 0px;
 
-    position : absolute;
+    position: absolute;
 
-    transform-origin : center;
+    transform-origin: center;
 
-    transform : scale(0.4);
+    transform: scale(0.4);
 
     background-image: url('/markdown/gallery-arrow.svg');
     background-size: contain;
@@ -95,17 +95,40 @@ img {
     background-position: center center;
 }
 
-.gallery-button-left::before{
-    transform : scale(0.4) scaleX(-1) translateX(var(--button-arrow-offset));
+.gallery-button-left::before {
+    transform: scale(0.4) scaleX(-1) translateX(var(--button-arrow-offset));
 }
 
-.gallery-button-right::before{
-    transform : scale(0.4) translateX(var(--button-arrow-offset));
+.gallery-button-right::before {
+    transform: scale(0.4) translateX(var(--button-arrow-offset));
 }
 
 .gallery-button-left {
-    left : 10px;
+    left: 10px;
 }
+
 .gallery-button-right {
-    right : 10px;
+    right: 10px;
+}
+
+.gallery-dot-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.gallery-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 7px;
+    border: 2px solid #404040;
+    background-color: white;
+    cursor: pointer;
+}
+
+.gallery-dot-selected {
+    background-color: #404040;
 }
