@@ -34,6 +34,9 @@ img {
     gap: 20px;
 }
 
+.gallery-img {
+    overflow-y : hidden;
+}
 
 .gallery-button {
     --button-size: 50px;

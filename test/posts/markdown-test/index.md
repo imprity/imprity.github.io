@@ -63,8 +63,11 @@ end a line with two or more spaces, then type return.
 <gallery>
 ![img1](img1.jpg)
 ![img2](img2.png)
+![missing image 1](foo.jpg)
+![missing image 2](bar.jpg)
 ![img3](img3.jpg)
 ![img4](img4.jpg)
+![missing image with a very long alt text that is several paragraphs long for some reason, like why is this so fucking long? Who knows. Maybe the user really wanted a long alt text. Byt the way, have I told you how long this alt text is? It's really freaking long! I have no idea why though. But it is very long. So long, infact, we could probably have image in ascii art if really wanted to. Have I told you how long this alt text is?](meme.jpg)
 ![img5](img5.jpg)
 ![img6](img6.jpg)
 </gallery>

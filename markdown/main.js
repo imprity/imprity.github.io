@@ -525,15 +525,18 @@ class Gallery {
         // ===============================================
         // wait for images to load then determine layout
         // ===============================================
+        this.onResize();
         const waitImageLoading = (img) => {
-            //TODO : handle error
             return new Promise((res, rej) => {
                 if (img.complete) {
                     res();
                 }
                 else {
                     img.addEventListener('load', () => {
-                        console.log('loaded');
+                        res();
+                    });
+                    img.addEventListener('error', () => {
+                        // we just resolve it even though error occured loading
                         res();
                     });
                 }
@@ -545,6 +548,7 @@ class Gallery {
                 promises.push(waitImageLoading(img));
             }
             yield Promise.all(promises);
+            console.log('done waiting');
             this.onResize();
         });
         waitAndResize();
@@ -560,11 +564,29 @@ class Gallery {
     onResize() {
         const galleryRect = this.galleryDiv.getBoundingClientRect();
         for (const img of this.images) {
-            const scaleX = galleryRect.width / img.naturalWidth;
-            const scaleY = galleryRect.height / img.naturalHeight;
+            let imgWidth = img.naturalWidth;
+            let imgHeight = img.naturalHeight;
+            // handle missing image
+            if (imgWidth === 0 && imgHeight === 0) {
+                const half = Math.min(galleryRect.width, galleryRect.height) * 0.5;
+                img.style.width = `${half}px`;
+                img.style.minWidth = `${half}px`;
+                img.style.maxWidth = `${half}px`;
+                img.style.height = `auto`;
+                img.style.maxHeight = `${half}px`;
+                continue;
+            }
+            if (imgWidth < 1) {
+                imgWidth = Math.min(galleryRect.width, galleryRect.height) * 0.5;
+            }
+            if (imgHeight < 1) {
+                imgHeight = Math.min(galleryRect.width, galleryRect.height) * 0.5;
+            }
+            const scaleX = galleryRect.width / imgWidth;
+            const scaleY = galleryRect.height / imgHeight;
             const scale = Math.min(scaleX, scaleY);
-            let w = img.naturalWidth * scale;
-            let h = img.naturalHeight * scale;
+            let w = imgWidth * scale;
+            let h = imgHeight * scale;
             w -= Gallery.GalleryMargin;
             h -= Gallery.GalleryMargin;
             w = Math.max(w, 0);
