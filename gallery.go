@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"strings"
 	"text/template"
 
 	"github.com/yuin/goldmark"
@@ -67,7 +65,6 @@ func (b *galleryParser) Open(
 	reader text.Reader,
 	pc parser.Context,
 ) (gast.Node, parser.State) {
-	println("=== OPENING GALLERY ===")
 	if _, isDocument := parent.(*gast.Document); !isDocument {
 		return nil, parser.NoChildren
 	}
@@ -92,7 +89,6 @@ func (b *galleryParser) Open(
 		return nil, parser.NoChildren
 	}
 
-	println("=== GALLERY OEPENED ===")
 	reader.Advance(advance)
 	return NewGallery(), parser.HasChildren
 }
@@ -108,15 +104,12 @@ func (b *galleryParser) Continue(
 
 	lineStr := string(line)
 
-	fmt.Printf("== \"%s\"\n", strings.ReplaceAll(lineStr, "\n", "\\n"))
-
 	lineStr, advance = ConsumeSpace(lineStr, advance)
 
 	var consumed bool
 
 	if lineStr, advance, consumed = ConsumeLiteral(lineStr, advance, "</gallery>"); consumed {
 		reader.Advance(advance)
-		println("=== CLOSING GALLERY ===")
 		return parser.Close
 	}
 
@@ -202,14 +195,6 @@ func (r *GalleryHTMLRenderer) renderGallery(
 	entering bool,
 ) (gast.WalkStatus, error) {
 	if entering {
-		// _, _ = w.WriteString("<gallery-open>\n")
-		//
-		// if gallery, isGallery := n.(*Gallery); isGallery {
-		// 	for _, img := range gallery.Images {
-		// 		w.WriteString(fmt.Sprintf("![%s](%s)\n", img.AltText, img.ImageSource))
-		// 	}
-		// }
-
 		if gallery, isGallery := n.(*Gallery); isGallery {
 			err := galleryTemplate.Execute(
 				w, gallery,
@@ -244,8 +229,7 @@ func (t *galleryItemASTTransformer) Transform(
 	reader text.Reader,
 	pc parser.Context,
 ) {
-	println("\n=== BEFORE TRANSFORM ===\n")
-	document.Dump(reader.Source(), 0)
+	// document.Dump(reader.Source(), 0)
 
 	var galleries []*Gallery
 
@@ -258,7 +242,6 @@ func (t *galleryItemASTTransformer) Transform(
 			nextGallery = parentGallery
 
 			if img, isImage := node.(*gast.Image); isImage {
-				fmt.Printf("text: \"%s\", dest: \"%s\"\n", img.Text(reader.Source()), img.Destination)
 				parentGallery.Images = append(parentGallery.Images, GalleryImage{
 					AltText:     img.Text(reader.Source()),
 					ImageSource: img.Destination,
@@ -266,7 +249,6 @@ func (t *galleryItemASTTransformer) Transform(
 			}
 		} else {
 			if gallery, isGallery := node.(*Gallery); isGallery {
-				fmt.Printf("found gallery\n")
 				galleries = append(galleries, gallery)
 				nextGallery = gallery
 			}
@@ -282,14 +264,11 @@ func (t *galleryItemASTTransformer) Transform(
 
 	walkFunc(document, nil)
 
-	fmt.Printf("found %d galleries\n", len(galleries))
-
 	for _, g := range galleries {
 		g.RemoveChildren(g)
 	}
 
-	println("\n=== AFTER TRANSFORM ===\n")
-	document.Dump(reader.Source(), 0)
+	// document.Dump(reader.Source(), 0)
 }
 
 // ==================================
