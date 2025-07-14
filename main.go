@@ -25,6 +25,9 @@ var (
 func main() {
 	flag.Parse()
 
+	// =======================
+	// set up test
+	// =======================
 	if FlagTest {
 		PostListPath = "test/out/public/post-list.json"
 		PostsPath = "test/posts-copy"
@@ -80,6 +83,22 @@ func main() {
 		err = CompileBlog(PostsPath, postList, PostsOutPath)
 		if err != nil {
 			ErrLogger.Fatal(err)
+		}
+	}
+
+	// ==============================================
+	// if there is no post-list, create one
+	// ==============================================
+	{
+		exists, err := FileExists(PostListPath, false)
+		if err != nil {
+			ErrLogger.Fatal(err)
+		}
+		if !exists {
+			err = SavePostList(PostList{}, PostListPath)
+			if err != nil {
+				ErrLogger.Fatal(err)
+			}
 		}
 	}
 
